@@ -34,7 +34,7 @@ class Model(nn.Module):
         # Initializing hidden state for first input using method defined below
         hidden = self.init_hidden(batch_size)
 
-        # Passing in the input and hidden state into the model and obtaining outputs
+        # Passing in the input and hidden state into the self and obtaining outputs
         out, hidden = self.rnn(x, hidden)
         out = out[:, -1]
         out = self.fc(out)
@@ -58,23 +58,74 @@ class Model(nn.Module):
         )
         return dist
 
-    def train_step(self, optimizer, criterion, inputs, outputs, train=True):
-        optimizer.zero_grad()
-        output, hidden = self(inputs)
+    def train_step(self, optimizer, criterion, dataloader):
+        self.train()
+        for batch in dataloader:
+            inputs, outputs = batch
+            optimizer.zero_grad()
 
-        l2_reg = torch.tensor(0.0, device=self.device)
-        for param in self.parameters():
-            l2_reg += torch.norm(param)
+            output, hidden = self(inputs)
 
-        dist_reg = torch.norm(self.sqr_dist(torch.squeeze(hidden[-1])))
+            l2_reg = torch.tensor(0.0, device=self.device)
+            for param in self.parameters():
+                l2_reg += torch.norm(param)
 
-        # loss = 0.00005 * dist_reg + criterion(
-        #     torch.squeeze(output), torch.squeeze(outputs)
-        # )
-        loss = 0.0001 * l2_reg + criterion(
-            torch.squeeze(output), torch.squeeze(outputs)
-        )
-        # loss = criterion(torch.squeeze(output), torch.squeeze(outputs))
-        loss.backward()
-        optimizer.step()
+            dist_reg = torch.norm(self.sqr_dist(torch.squeeze(hidden[-1])))
+
+            # loss = 0.00005 * dist_reg + criterion(
+            #     torch.squeeze(output), torch.squeeze(outputs)
+            # )
+            # loss = 0.0001 * l2_reg + criterion(
+            #     torch.squeeze(output), torch.squeeze(outputs)
+            # )
+            loss = criterion(torch.squeeze(output), torch.squeeze(outputs))
+
+            loss.backward()
+            optimizer.step()
         return loss
+
+    def validation(self, criterion, validation_data):
+        self.eval()
+        valloader = torch.utils.data.DataLoader(
+            validation_data, batch_size=len(validation_data), shuffle=False
+        )
+        for batch in valloader:
+            inputs, outputs = batch
+            prediction, hidden = self(inputs)
+            loss = criterion(torch.squeeze(prediction), torch.squeeze(outputs))
+
+        return loss
+
+    def training_run(
+        self,
+        optimizer,
+        criterion,
+        training_datasets,
+        validation_data,
+        n_epochs=100,
+        batch_size=32,
+    ):
+        trainloaders = []
+        for dataset in training_datasets:
+            trainloaders.append(
+                torch.utils.data.DataLoader(
+                    dataset, batch_size=batch_size, shuffle=True
+                )
+            )
+
+        train_losses = np.zeros(n_epochs)
+        val_losses = np.zeros(n_epochs)
+        for epoch in range(1, n_epochs + 1):
+            for trainloader in trainloaders:
+                train_losses[epoch - 1] = self.train_step(
+                    optimizer, criterion, trainloader
+                )
+
+            val_losses[epoch - 1] = self.validation(criterion, validation_data)
+
+            if epoch % 10 == 0:
+                print("Epoch: {}/{}.............".format(epoch, n_epochs), end=" ")
+                print("Loss: {:.5f}".format(train_losses[epoch - 1].item()), end=" ")
+                print("Validation Loss: {:.5f}".format(val_losses[epoch - 1].item()))
+
+        return train_losses, val_losses
