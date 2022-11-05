@@ -70,7 +70,7 @@ class Model(nn.Module):
             for param in self.parameters():
                 l2_reg += torch.norm(param)
 
-            dist_reg = torch.norm(self.sqr_dist(torch.squeeze(hidden[-1])))
+            # dist_reg = torch.norm(self.sqr_dist(torch.squeeze(hidden[-1])))
 
             # loss = 0.00005 * dist_reg + criterion(
             #     torch.squeeze(output), torch.squeeze(outputs)
@@ -84,27 +84,71 @@ class Model(nn.Module):
             optimizer.step()
         return loss
 
-    def validation(self, criterion, validation_data):
-        self.eval()
-        valloader = torch.utils.data.DataLoader(
-            validation_data, batch_size=len(validation_data), shuffle=False
-        )
-        for batch in valloader:
-            inputs, outputs = batch
-            prediction, hidden = self(inputs)
-            loss = criterion(torch.squeeze(prediction), torch.squeeze(outputs))
+    def validation(self, criterion, validation_datasets, track=False):
+        """
+        Compute loss of validation datasets
 
-        return loss
+        Parameters
+        ----------
+        criterion
+        validation_datasets : list of datasets
+        track : boolean default false
+            If true output hidden_states
+
+        Returns
+        -------
+        losses : np.array(n)
+        hidden_states : list arrays(n_datapoints, n_hidden_dim) per dataset
+        """
+        self.eval()
+        losses = np.zeros(len(validation_datasets))
+        hidden_states = []
+        for i, dataset in enumerate(validation_datasets):
+            valloader = torch.utils.data.DataLoader(
+                dataset, batch_size=len(dataset), shuffle=False
+            )
+            for batch in valloader:
+                inputs, outputs = batch
+                prediction, hidden = self(inputs)
+            losses[i] = criterion(torch.squeeze(prediction), torch.squeeze(outputs))
+            if track:
+                hidden_states.append(torch.squeeze(hidden).cpu().detach().numpy())
+
+        if track:
+            return losses, hidden_states
+        return losses
 
     def training_run(
         self,
         optimizer,
         criterion,
         training_datasets,
-        validation_data,
+        validation_datasets,
         n_epochs=100,
         batch_size=32,
     ):
+        """
+        Train the network on training datasets
+
+        Parameters
+        ----------
+        optimizer
+        criterion
+        training_datasets: list[datasets]
+        validation_datasets: list[datasets]
+        n_epochs: int, default 100
+        batch_size: int default 32
+            batch size during training
+
+        Returns
+        -------
+        training_losses: array(n_epochs)
+            The losses of the last training dataset
+        val_losses: array(n_epochs, len(validation_datasets))
+            The losses per validation dataset
+        hidden_states : list (n_epochs, n_val_datasets, n_datapoints, n_hidden_dim)
+            list of arrays per validation dataset per epoch
+        """
         trainloaders = []
         for dataset in training_datasets:
             trainloaders.append(
@@ -114,18 +158,22 @@ class Model(nn.Module):
             )
 
         train_losses = np.zeros(n_epochs)
-        val_losses = np.zeros(n_epochs)
+        val_losses = np.zeros([n_epochs, len(validation_datasets)])
+        hidden_states = []
         for epoch in range(1, n_epochs + 1):
             for trainloader in trainloaders:
                 train_losses[epoch - 1] = self.train_step(
                     optimizer, criterion, trainloader
                 )
 
-            val_losses[epoch - 1] = self.validation(criterion, validation_data)
+            val_losses[epoch - 1, :], hidden = self.validation(
+                criterion, validation_datasets, track=True
+            )
+            hidden_states.append(hidden)
 
             if epoch % 10 == 0:
                 print("Epoch: {}/{}.............".format(epoch, n_epochs), end=" ")
                 print("Loss: {:.5f}".format(train_losses[epoch - 1].item()), end=" ")
-                print("Validation Loss: {:.5f}".format(val_losses[epoch - 1].item()))
+                print("Validation Loss: {:.5f}".format(val_losses[epoch - 1, 0].item()))
 
-        return train_losses, val_losses
+        return train_losses, val_losses, hidden_states
