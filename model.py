@@ -146,7 +146,7 @@ class Model(nn.Module):
             The losses of the last training dataset
         val_losses: array(n_epochs, len(validation_datasets))
             The losses per validation dataset
-        hidden_states : list (n_epochs, n_val_datasets, n_datapoints, n_hidden_dim)
+        hidden_states : list (n_epochs, n_val_datasets, array(n_datapoints, n_hidden_dim))
             list of arrays per validation dataset per epoch
         """
         trainloaders = []
