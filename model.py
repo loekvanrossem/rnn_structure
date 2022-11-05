@@ -2,6 +2,7 @@ import torch
 from torch import nn
 
 import numpy as np
+import pandas as pd
 
 
 class Model(nn.Module):
@@ -98,7 +99,7 @@ class Model(nn.Module):
         Returns
         -------
         losses : np.array(n)
-        hidden_states : list arrays(n_datapoints, n_hidden_dim) per dataset
+        hidden_states : list arrays(n_inputs, n_hidden_dim) per dataset
         """
         self.eval()
         losses = np.zeros(len(validation_datasets))
@@ -112,7 +113,8 @@ class Model(nn.Module):
                 prediction, hidden = self(inputs)
             losses[i] = criterion(torch.squeeze(prediction), torch.squeeze(outputs))
             if track:
-                hidden_states.append(torch.squeeze(hidden).cpu().detach().numpy())
+                hidden = pd.DataFrame(torch.squeeze(hidden).cpu().detach().numpy())
+                hidden_states.append(hidden)
 
         if track:
             return losses, hidden_states
@@ -146,8 +148,8 @@ class Model(nn.Module):
             The losses of the last training dataset
         val_losses: array(n_epochs, len(validation_datasets))
             The losses per validation dataset
-        hidden_states : list (n_epochs, n_val_datasets, array(n_datapoints, n_hidden_dim))
-            list of arrays per validation dataset per epoch
+        hidden_states : Dataframe (n_epochs, n_val_datasets, n_inputs)
+            Dataframe containing the hidden dimension values for each input and epoch
         """
         trainloaders = []
         for dataset in training_datasets:
@@ -169,11 +171,17 @@ class Model(nn.Module):
             val_losses[epoch - 1, :], hidden = self.validation(
                 criterion, validation_datasets, track=True
             )
-            hidden_states.append(hidden)
+            df = pd.concat(hidden, keys=np.arange(len(validation_datasets)))
+            hidden_states.append(df)
 
             if epoch % 10 == 0:
                 print("Epoch: {}/{}.............".format(epoch, n_epochs), end=" ")
                 print("Loss: {:.5f}".format(train_losses[epoch - 1].item()), end=" ")
                 print("Validation Loss: {:.5f}".format(val_losses[epoch - 1, 0].item()))
+
+        hidden_states = pd.concat(hidden_states, keys=np.arange(n_epochs))
+        hidden_states.index = hidden_states.index.set_names(
+            ["Epoch", "Dataset", "Input"]
+        )
 
         return train_losses, val_losses, hidden_states
