@@ -2,10 +2,11 @@ import torch
 from torch import nn
 
 import numpy as np
-import pandas as pd
+
+from compilation import CompileModel
 
 
-class Model(nn.Module):
+class Model(CompileModel):
     def __init__(self, input_size, output_size, hidden_dim, n_layers, device):
         super(Model, self).__init__()
 
@@ -84,104 +85,3 @@ class Model(nn.Module):
             loss.backward()
             optimizer.step()
         return loss
-
-    def validation(self, criterion, validation_datasets, track=False):
-        """
-        Compute loss of validation datasets
-
-        Parameters
-        ----------
-        criterion
-        validation_datasets : list of datasets
-        track : boolean default false
-            If true output hidden_states
-
-        Returns
-        -------
-        losses : np.array(n)
-        hidden_states : list arrays(n_inputs, n_hidden_dim) per dataset
-        """
-        self.eval()
-        losses = np.zeros(len(validation_datasets))
-        hidden_states = []
-        for i, dataset in enumerate(validation_datasets):
-            valloader = torch.utils.data.DataLoader(
-                dataset, batch_size=len(dataset), shuffle=False
-            )
-            for batch in valloader:
-                inputs, outputs = batch
-                prediction, hidden = self(inputs)
-            losses[i] = criterion(torch.squeeze(prediction), torch.squeeze(outputs))
-            if track:
-                hidden = pd.DataFrame(torch.squeeze(hidden).cpu().detach().numpy())
-                hidden_states.append(hidden)
-
-        if track:
-            return losses, hidden_states
-        return losses
-
-    def training_run(
-        self,
-        optimizer,
-        criterion,
-        training_datasets,
-        validation_datasets,
-        n_epochs=100,
-        batch_size=32,
-    ):
-        """
-        Train the network on training datasets
-
-        Parameters
-        ----------
-        optimizer
-        criterion
-        training_datasets: list[datasets]
-        validation_datasets: list[datasets]
-        n_epochs: int, default 100
-        batch_size: int default 32
-            batch size during training
-
-        Returns
-        -------
-        training_losses: array(n_epochs)
-            The losses of the last training dataset
-        val_losses: array(n_epochs, len(validation_datasets))
-            The losses per validation dataset
-        hidden_states : Dataframe (n_epochs, n_val_datasets, n_inputs)
-            Dataframe containing the hidden dimension values for each input and epoch
-        """
-        trainloaders = []
-        for dataset in training_datasets:
-            trainloaders.append(
-                torch.utils.data.DataLoader(
-                    dataset, batch_size=batch_size, shuffle=True
-                )
-            )
-
-        train_losses = np.zeros(n_epochs)
-        val_losses = np.zeros([n_epochs, len(validation_datasets)])
-        hidden_states = []
-        for epoch in range(1, n_epochs + 1):
-            for trainloader in trainloaders:
-                train_losses[epoch - 1] = self.train_step(
-                    optimizer, criterion, trainloader
-                )
-
-            val_losses[epoch - 1, :], hidden = self.validation(
-                criterion, validation_datasets, track=True
-            )
-            df = pd.concat(hidden, keys=np.arange(len(validation_datasets)))
-            hidden_states.append(df)
-
-            if epoch % 10 == 0:
-                print("Epoch: {}/{}.............".format(epoch, n_epochs), end=" ")
-                print("Loss: {:.5f}".format(train_losses[epoch - 1].item()), end=" ")
-                print("Validation Loss: {:.5f}".format(val_losses[epoch - 1, 0].item()))
-
-        hidden_states = pd.concat(hidden_states, keys=np.arange(n_epochs))
-        hidden_states.index = hidden_states.index.set_names(
-            ["Epoch", "Dataset", "Input"]
-        )
-
-        return train_losses, val_losses, hidden_states
