@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.manifold import MDS
 from sklearn.decomposition import PCA
 
-from ipywidgets import Layout, interact, IntSlider
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
+from adjustText import adjust_text
+from ipywidgets import Layout, interact, IntSlider, Button
 from IPython.display import display, clear_output
 
 
@@ -39,7 +41,8 @@ def hidden_repr(hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_s
     points = []
     for dataset_name, dataset in x.groupby("Dataset"):
         for input_name, input in dataset.groupby("Input"):
-            ax.plot(input[0], input[1], label=input_name, zorder=0)
+            line = ax.plot(input[0], input[1], label=input_name, zorder=0)
+            color = line[0].get_color()
             # Label some points
             first_epoch = hidden_states.index.get_level_values("Epoch").min()
             last_epoch = hidden_states.index.get_level_values("Epoch").max()
@@ -51,17 +54,25 @@ def hidden_repr(hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_s
             ).astype(int)
             for epoch in log_range:
                 ax.scatter(input[0][epoch], input[1][epoch], s=10, c="Black", zorder=1)
-                ax.annotate(
-                    epoch,
-                    (input[0][epoch] + 0.02, input[1][epoch] + 0.02),
-                    zorder=2,
-                )
+                ax.annotate(epoch, (input[0][epoch], input[1][epoch]), zorder=2)
             # Add time moveable points
             point = ax.plot(
-                input[0][first_epoch], input[1][first_epoch], "ko", alpha=0, zorder=3
+                input[0][first_epoch],
+                input[1][first_epoch],
+                "o",
+                c=color,
+                zorder=3,
+                markeredgecolor="black",
             )
-            points.append((point, input))
-    plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+            label = ax.text(
+                input[0][first_epoch],
+                input[1][first_epoch],
+                input_name,
+                path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
+                zorder=4,
+            )
+            points.append((point, input, label))
+    # plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
 
     # Add slider for time movable points
     int_wdgt = IntSlider(
@@ -73,11 +84,34 @@ def hidden_repr(hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_s
         layout=Layout(width=f"{int(fig_size*7)}%"),
     )
 
+    scale = (ax.get_ylim()[1] - ax.get_ylim()[0]) / fig_size
+
+    def smallest_dist(point, labels_x_pos, labels_y_pos):
+        if len(labels_x_pos) == 0:
+            return np.inf
+        distances = (point[0] - np.array(labels_x_pos)) ** 2 + (
+            (point[1] - np.array(labels_y_pos)) ** 2
+        )
+        return np.sqrt(min(distances))
+
     @interact(epoch=int_wdgt)
     def slider_epochs(epoch):
-        for point, input in points:
-            point[0].set_xdata(input[0][epoch])
-            point[0].set_ydata(input[1][epoch])
-            point[0].set_alpha(1)
+        labels_x_pos = []
+        labels_y_pos = []
+        for point, input, label in points:
+            x = float(input[0][epoch])
+            y = float(input[1][epoch])
+
+            # Position point
+            point[0].set_xdata(x)
+            point[0].set_ydata(y)
+
+            # Position label
+            pos = [x + 0.06 * scale, y + 0.02 * scale]
+            while smallest_dist(pos, labels_x_pos, labels_y_pos) < 0.15 * scale:
+                pos[1] += 0.05 * scale
+            label.set_position(pos)
+            labels_x_pos.append(pos[0])
+            labels_y_pos.append(pos[1])
         display(fig)
         clear_output(wait=True)

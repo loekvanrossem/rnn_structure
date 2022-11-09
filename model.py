@@ -7,7 +7,28 @@ from compilation import CompileModel
 
 
 class Model(CompileModel):
-    def __init__(self, input_size, output_size, hidden_dim, n_layers, device):
+    """
+    Many to one RNN
+
+    Attributes
+    ----------
+    input_size : int
+        The size of one input symbol
+    output_size : int
+        The size of the output
+    hidden_dim : int
+        The number of hidden neurons
+    n_layers : int
+        The number of RNN layers
+    device : device
+        The device to put the model on
+    output_noise : float, default 0
+        Add noise to the true outputs during training
+    """
+
+    def __init__(
+        self, input_size, output_size, hidden_dim, n_layers, device, output_noise=0
+    ):
         super(Model, self).__init__()
 
         self.device = device
@@ -15,6 +36,7 @@ class Model(CompileModel):
         # Defining some parameters
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
+        self.output_noise = output_noise
 
         # Defining the layers
         self.rnn = nn.RNN(
@@ -24,8 +46,7 @@ class Model(CompileModel):
         self.ReLU = nn.ReLU()
 
         for par in self.rnn.parameters():
-            nn.init.normal_(par, mean=0, std=0.3)
-        # torch.nn.init.constant(self.rnn, 0)
+            nn.init.normal_(par, mean=0, std=0.1)
 
         self.to(device)
 
@@ -64,6 +85,8 @@ class Model(CompileModel):
         self.train()
         for batch in dataloader:
             inputs, outputs = batch
+            noise = np.random.normal(size=outputs.size()) * self.output_noise
+            outputs += torch.from_numpy(noise).to(self.device)
             optimizer.zero_grad()
 
             output, hidden = self(inputs)

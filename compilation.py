@@ -43,7 +43,7 @@ class CompileModel(nn.Module):
                 for input in inputs:
                     label = "".join(str(int(char[0])) for char in input)
                     labels.append(label)
-                hidden = torch.squeeze(hidden).cpu().detach().numpy()
+                hidden = torch.squeeze(hidden[-1]).cpu().detach().numpy()
                 hidden = pd.DataFrame(hidden, labels)
                 hidden_states.append(hidden)
 
