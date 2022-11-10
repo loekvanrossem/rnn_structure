@@ -26,7 +26,7 @@ class CompileModel(nn.Module):
         """
         self.eval()
         losses = np.zeros(len(validation_datasets))
-        hidden_states = []
+        hidden_states, output_values = [], []
         for i, dataset in enumerate(validation_datasets):
             # Compute loss
             valloader = torch.utils.data.DataLoader(
@@ -35,20 +35,23 @@ class CompileModel(nn.Module):
             for batch in valloader:
                 inputs, outputs = batch
                 prediction, hidden = self(inputs)
-            losses[i] = criterion(torch.squeeze(prediction), torch.squeeze(outputs))
+                losses[i] = criterion(torch.squeeze(prediction), torch.squeeze(outputs))
 
-            # Track hidden states
-            if track:
-                labels = []
-                for input in inputs:
-                    label = "".join(str(int(char[0])) for char in input)
-                    labels.append(label)
-                hidden = torch.squeeze(hidden[-1]).cpu().detach().numpy()
-                hidden = pd.DataFrame(hidden, labels)
-                hidden_states.append(hidden)
+                # Track hidden states
+                if track:
+                    labels = []
+                    for input in inputs:
+                        label = "".join(str(int(char[0])) for char in input)
+                        labels.append(label)
+                    hidden = torch.squeeze(hidden[-1]).cpu().detach().numpy()
+                    prediction = torch.squeeze(prediction).cpu().detach().numpy()
+                    hidden = pd.DataFrame(hidden, labels)
+                    prediction = pd.DataFrame(prediction, labels)
+                    hidden_states.append(hidden)
+                    output_values.append(prediction)
 
         if track:
-            return losses, hidden_states
+            return losses, hidden_states, output_values
         return losses
 
     def training_run(
@@ -81,6 +84,7 @@ class CompileModel(nn.Module):
             The losses per validation dataset
         hidden_states : Dataframe (n_epochs, n_val_datasets, n_inputs)
             Dataframe containing the hidden dimension values for each input and epoch
+            as well as the predicted outputs
         """
         # Generate trainloaders
         trainloaders = []
@@ -94,31 +98,41 @@ class CompileModel(nn.Module):
         # Train
         train_losses = np.zeros(n_epochs)
         val_losses = np.zeros([n_epochs, len(validation_datasets)])
-        hidden_states = []
+        hidden_states, output_values = [], []
 
-        with trange(n_epochs, desc="Training", unit="steps") as iterator:
-            for epoch in iterator:
+        try:
+            with trange(n_epochs, desc="Training", unit="steps") as iterator:
+                for epoch in iterator:
 
-                for trainloader in trainloaders:
-                    train_losses[epoch] = self.train_step(
-                        optimizer, criterion, trainloader
+                    for trainloader in trainloaders:
+                        train_losses[epoch] = self.train_step(
+                            optimizer, criterion, trainloader
+                        )
+
+                    val_losses[epoch, :], hidden, output = self.validation(
+                        criterion, validation_datasets, track=True
                     )
+                    hidden = pd.concat(hidden, keys=np.arange(len(validation_datasets)))
+                    output = pd.concat(output, keys=np.arange(len(validation_datasets)))
+                    hidden_states.append(hidden)
+                    output_values.append(output)
 
-                val_losses[epoch, :], hidden = self.validation(
-                    criterion, validation_datasets, track=True
-                )
-                df = pd.concat(hidden, keys=np.arange(len(validation_datasets)))
-                hidden_states.append(df)
+                    iterator.set_postfix(
+                        train_loss="{:.5f}".format(train_losses[epoch].item()),
+                        val_loss="{:.5f}".format(val_losses[epoch, 0].item()),
+                    )
+        except Exception as e:
+            print(e)
+            raise e
+        finally:
+            # Make dataframe with hidden states and outputs
+            hidden_states = pd.concat(hidden_states, keys=np.arange(n_epochs))
+            hidden_states.index = hidden_states.index.set_names(
+                ["Epoch", "Dataset", "Input"]
+            )
+            output_values = pd.concat(output_values, keys=np.arange(n_epochs))
+            output_values.index = output_values.index.set_names(
+                ["Epoch", "Dataset", "Input"]
+            )
 
-                iterator.set_postfix(
-                    train_loss="{:.5f}".format(train_losses[epoch].item()),
-                    val_loss="{:.5f}".format(val_losses[epoch, 0].item()),
-                )
-
-        # Make dataframe with hidden states
-        hidden_states = pd.concat(hidden_states, keys=np.arange(n_epochs))
-        hidden_states.index = hidden_states.index.set_names(
-            ["Epoch", "Dataset", "Input"]
-        )
-
-        return train_losses, val_losses, hidden_states
+            return train_losses, val_losses, hidden_states, output_values

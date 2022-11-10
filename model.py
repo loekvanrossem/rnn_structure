@@ -22,12 +22,21 @@ class Model(CompileModel):
         The number of RNN layers
     device : device
         The device to put the model on
+    init_std : float, default 0.1
+        The standard deviation of the initial rnn weight distribution
     output_noise : float, default 0
         Add noise to the true outputs during training
     """
 
     def __init__(
-        self, input_size, output_size, hidden_dim, n_layers, device, output_noise=0
+        self,
+        input_size,
+        output_size,
+        hidden_dim,
+        n_layers,
+        device,
+        init_std=0.1,
+        output_noise=0,
     ):
         super(Model, self).__init__()
 
@@ -46,7 +55,7 @@ class Model(CompileModel):
         self.ReLU = nn.ReLU()
 
         for par in self.rnn.parameters():
-            nn.init.normal_(par, mean=0, std=0.1)
+            nn.init.normal_(par, mean=init_std, std=init_std)
 
         self.to(device)
 
