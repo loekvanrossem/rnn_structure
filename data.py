@@ -3,6 +3,8 @@ import torch
 from torch.utils.data import TensorDataset
 import random
 
+from preprocessing import OneHot
+
 
 # def gen_seq(n, symbols):
 #     """Generate all sequences of length n."""
@@ -24,7 +26,7 @@ def gen_rand_seq(n, symbols, n_sequences):
     return sequences
 
 
-def seq_data(device, symbols, problem, n_datapoints=None, seq_len=4):
+def seq_data(device, problem, encoding, n_datapoints=None, seq_len=4):
     """
     Generate data solving some problem on sequences.
 
@@ -32,10 +34,10 @@ def seq_data(device, symbols, problem, n_datapoints=None, seq_len=4):
     ----------
     device : Device
         The device to put the data on
-    symbols : set
-        The symbols that sequences can contain
     problem : function
         A function on sequences used to compute output data
+    encoding : Encoding
+        How the input and output data will be encoded
     n_datapoints : int, default all
         The maximum number of sequences to generate
     seq_len : int, default 4
@@ -46,18 +48,18 @@ def seq_data(device, symbols, problem, n_datapoints=None, seq_len=4):
     dataset : Torch Dataset
         Contains the inputs and outputs
     """
+    symbols = encoding.symbols
     if n_datapoints is None:
         n_datapoints = len(symbols) ** seq_len
     # Generate input sequences
     inputs = gen_rand_seq(seq_len, symbols, n_datapoints)
-    inputs = np.array(inputs, dtype=np.float32)
 
     # Compute outputs
-    outputs = np.apply_along_axis(problem, 1, inputs).astype(np.float32)
+    outputs = np.apply_along_axis(problem, 1, inputs)
 
     # Prepare for torch
-    inputs = inputs.reshape(inputs.shape[0], inputs.shape[1], 1)
-    inputs = torch.from_numpy(inputs).to(device)
-    outputs = torch.from_numpy(outputs).to(device)
+    inputs, outputs = encoding(inputs), encoding(outputs)
+    inputs = torch.from_numpy(inputs.astype(np.float32)).to(device)
+    outputs = torch.from_numpy(outputs.astype(np.float32)).to(device)
     dataset = TensorDataset(inputs, outputs)
     return dataset

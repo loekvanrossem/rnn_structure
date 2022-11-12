@@ -41,8 +41,10 @@ class CompileModel(nn.Module):
                 if track:
                     labels = []
                     for input in inputs:
-                        label = "".join(str(int(char[0])) for char in input)
+                        decoding = self.encoding.decode(input.cpu())
+                        label = "".join(str(int(char)) for char in decoding)
                         labels.append(label)
+
                     hidden = torch.squeeze(hidden[-1]).cpu().detach().numpy()
                     prediction = torch.squeeze(prediction).cpu().detach().numpy()
                     hidden = pd.DataFrame(hidden, labels)
@@ -103,12 +105,7 @@ class CompileModel(nn.Module):
         try:
             with trange(n_epochs, desc="Training", unit="steps") as iterator:
                 for epoch in iterator:
-
-                    for trainloader in trainloaders:
-                        train_losses[epoch] = self.train_step(
-                            optimizer, criterion, trainloader
-                        )
-
+                    # Validate
                     val_losses[epoch, :], hidden, output = self.validation(
                         criterion, validation_datasets, track=True
                     )
@@ -116,6 +113,12 @@ class CompileModel(nn.Module):
                     output = pd.concat(output, keys=np.arange(len(validation_datasets)))
                     hidden_states.append(hidden)
                     output_values.append(output)
+
+                    # Training step
+                    for trainloader in trainloaders:
+                        train_losses[epoch] = self.train_step(
+                            optimizer, criterion, trainloader
+                        )
 
                     iterator.set_postfix(
                         train_loss="{:.5f}".format(train_losses[epoch].item()),

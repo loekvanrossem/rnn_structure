@@ -12,6 +12,8 @@ class Model(CompileModel):
 
     Attributes
     ----------
+    encoding : Encoding
+        An encoding from input symbols to neural activities
     input_size : int
         The size of one input symbol
     output_size : int
@@ -30,6 +32,7 @@ class Model(CompileModel):
 
     def __init__(
         self,
+        encoding,
         input_size,
         output_size,
         hidden_dim,
@@ -41,8 +44,7 @@ class Model(CompileModel):
         super(Model, self).__init__()
 
         self.device = device
-
-        # Defining some parameters
+        self.encoding = encoding
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
         self.output_noise = output_noise

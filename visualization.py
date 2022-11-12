@@ -9,7 +9,9 @@ from ipywidgets import Layout, interact, IntSlider, Button
 from IPython.display import display, clear_output
 
 
-def hidden_repr(hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_size=5):
+def hidden_repr(
+    hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_size=5, encoding=None
+):
     """
     Show a low dimensional representation of the hidden state dynamics
 
@@ -23,6 +25,8 @@ def hidden_repr(hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_s
         The number of epochs which will be labeled
     fig_size : float, default 5
         The size of the figure
+    encoding : Encoding, default None
+        If provided, also plot the encoded symbol values
     """
     index = hidden_states.index
     if hidden_states.shape[1] == 1:
@@ -78,7 +82,26 @@ def hidden_repr(hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_s
                 zorder=4,
             )
             points.append((point, input, label))
-    # plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+
+    scale = (ax.get_ylim()[1] - ax.get_ylim()[0]) / fig_size
+
+    # Add fixed points (WARNING: does not work for transformations)
+    if encoding is not None:
+        for symbol in encoding.symbols:
+            point = ax.plot(
+                encoding(symbol)[0],
+                encoding(symbol)[1],
+                "o",
+                c="black",
+                zorder=3,
+            )
+            label = ax.text(
+                encoding(symbol)[0] + 0.06 * scale,
+                encoding(symbol)[1] + 0.06 * scale,
+                f"Output {symbol}",
+                path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
+                zorder=4,
+            )
 
     # Add slider for time movable points
     int_wdgt = IntSlider(
@@ -89,8 +112,6 @@ def hidden_repr(hidden_states: pd.DataFrame, transform="PCA", n_labels=10, fig_s
         step=1,
         layout=Layout(width=f"{int(fig_size*7)}%"),
     )
-
-    scale = (ax.get_ylim()[1] - ax.get_ylim()[0]) / fig_size
 
     def smallest_dist(point, labels_x_pos, labels_y_pos):
         if len(labels_x_pos) == 0:
