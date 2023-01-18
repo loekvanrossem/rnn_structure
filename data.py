@@ -3,18 +3,6 @@ import torch
 from torch.utils.data import TensorDataset
 import random
 
-from preprocessing import OneHot
-
-
-# def gen_seq(n, symbols):
-#     """Generate all sequences of length n."""
-#     if n == 1:
-#         return [[x] for x in symbols]
-#     else:
-#         return sum(
-#             [[seq + [x]] for x in symbols for seq in gen_seq(n - 1, symbols)], []
-#         )
-
 
 def gen_rand_seq(n, symbols, n_sequences):
     """Generate random sequences of length n"""
@@ -59,6 +47,44 @@ def seq_data(device, problem, encoding, n_datapoints=None, seq_len=4):
 
     # Prepare for torch
     inputs, outputs = encoding(inputs), encoding(outputs)
+    inputs = torch.from_numpy(inputs.astype(np.float32)).to(device)
+    outputs = torch.from_numpy(outputs.astype(np.float32)).to(device)
+    dataset = TensorDataset(inputs, outputs)
+    return dataset
+
+
+def grid_data(device, dim=2, output_dim=2, n=100, bounds=(0, 1)):
+    """
+    Generate a grid of datapoints.
+
+    Usefull for plotting the network as a map.
+
+    Parameters
+    ----------
+    device : Device
+        The device to put the data on
+    dim : int, default 2
+        The number of dimensions
+    n : int, default 100
+        The number of values per dimension, total number of datapoints is n**dim
+    bounds : (float,float) default (0,1)
+        The interval in which the datapoints will be contained
+
+    Returns
+    -------
+    dataset : Torch Dataset
+        Contains the inputs and nans for outputs
+    """
+    # Generate inputs
+    X = np.linspace(bounds[0], bounds[1], n)
+    grid = np.meshgrid(*[X] * dim)
+    inputs = np.array([np.ravel(grid[i]) for i in range(dim)]).T
+    inputs = np.array([[input] for input in inputs])
+
+    # Generate outputs
+    outputs = np.nan * np.ones([len(inputs), output_dim])
+
+    # Prepare for torch
     inputs = torch.from_numpy(inputs.astype(np.float32)).to(device)
     outputs = torch.from_numpy(outputs.astype(np.float32)).to(device)
     dataset = TensorDataset(inputs, outputs)

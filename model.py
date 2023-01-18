@@ -4,6 +4,7 @@ from torch import nn
 import numpy as np
 
 from compilation import CompileModel
+from preprocessing import Encoding
 
 
 class Model(CompileModel):
@@ -32,14 +33,14 @@ class Model(CompileModel):
 
     def __init__(
         self,
-        encoding,
-        input_size,
-        output_size,
-        hidden_dim,
-        n_layers,
-        device,
-        init_std=0.1,
-        output_noise=0,
+        encoding: Encoding,
+        input_size: int,
+        output_size: int,
+        hidden_dim: int,
+        n_layers: int,
+        device: torch.device,
+        init_std: float = 0.1,
+        output_noise: float = 0.0,
     ):
         super(Model, self).__init__()
 
@@ -51,10 +52,10 @@ class Model(CompileModel):
 
         # Defining the layers
         self.rnn = nn.RNN(
-            input_size, hidden_dim, n_layers, batch_first=True, nonlinearity="relu"
+            input_size, hidden_dim, n_layers, batch_first=True, nonlinearity="tanh"
         )
         self.fc = nn.Linear(hidden_dim, output_size)
-        self.ReLU = nn.ReLU()
+        self.ReLU = nn.LeakyReLU()
 
         for par in self.rnn.parameters():
             nn.init.normal_(par, mean=init_std, std=init_std)
@@ -82,7 +83,7 @@ class Model(CompileModel):
         )
         return hidden
 
-    def sqr_dist(self, X: torch.tensor):
+    def sqr_dist(self, X: torch.Tensor):
         dist = (
             torch.diagonal(torch.tensordot(X, X, dims=([1], [1])))
             + -2 * torch.tensordot(X, X.mT, dims=([1], [0]))
@@ -102,19 +103,19 @@ class Model(CompileModel):
 
             output, hidden = self(inputs)
 
-            l2_reg = torch.tensor(0.0, device=self.device)
-            for param in self.parameters():
-                l2_reg += torch.norm(param)
+            # l2_reg = torch.tensor(0.0, device=self.device)
+            # for param in self.parameters():
+            #     l2_reg += torch.norm(param)
 
             # dist_reg = torch.norm(self.sqr_dist(torch.squeeze(hidden[-1])))
 
-            # loss = 0.00005 * dist_reg + criterion(
-            #     torch.squeeze(output), torch.squeeze(outputs)
-            # )
-            # loss = 0.0001 * l2_reg + criterion(
-            #     torch.squeeze(output), torch.squeeze(outputs)
-            # )
             loss = criterion(torch.squeeze(output), torch.squeeze(outputs))
+            # loss = 0.5 * dist_reg + criterion(
+            #     torch.squeeze(output), torch.squeeze(outputs)
+            # )
+            # loss = 0.01 * l2_reg + criterion(
+            #     torch.squeeze(output), torch.squeeze(outputs)
+            # )
 
             loss.backward()
             optimizer.step()

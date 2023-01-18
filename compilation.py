@@ -6,6 +6,8 @@ import pandas as pd
 
 from tqdm import trange
 
+import traceback
+
 
 class CompileModel(nn.Module):
     def validation(self, criterion, validation_datasets, track=False):
@@ -23,6 +25,7 @@ class CompileModel(nn.Module):
         -------
         losses : np.array(n)
         hidden_states : list arrays(n_inputs, n_hidden_dim) per dataset
+        output_values : list arrays(n_inputs, n_output_dim) per dataset
         """
         self.eval()
         losses = np.zeros(len(validation_datasets))
@@ -41,8 +44,11 @@ class CompileModel(nn.Module):
                 if track:
                     labels = []
                     for input in inputs:
-                        decoding = self.encoding.decode(input.cpu())
-                        label = "".join(str(int(char)) for char in decoding)
+                        try:
+                            decoding = self.encoding.decode(input.cpu())
+                            label = "".join(str(int(char)) for char in decoding)
+                        except KeyError:
+                            label = tuple(np.squeeze(input.cpu()).numpy())
                         labels.append(label)
 
                     hidden = torch.squeeze(hidden[-1]).cpu().detach().numpy()
@@ -56,12 +62,29 @@ class CompileModel(nn.Module):
             return losses, hidden_states, output_values
         return losses
 
+    def grid_values(self, grid_dataset):
+        gridloader = torch.utils.data.DataLoader(
+            grid_dataset, batch_size=len(grid_dataset), shuffle=False
+        )
+        for batch in gridloader:
+            grid_points, _ = batch
+            grid_points = torch.swapaxes(grid_points, 0, 1)
+            hidden_values = {}
+            for symbol in self.encoding.symbols:
+                input = self.encoding([[symbol]] * grid_points.shape[1])
+                input = torch.from_numpy(input.astype(np.float32)).to(self.device)
+                hidden_values[symbol], _ = self.rnn(input, grid_points)
+            output_values = self.fc(grid_points)
+
+        return hidden_values, output_values
+
     def training_run(
         self,
         optimizer,
         criterion,
         training_datasets,
         validation_datasets,
+        grid_dataset=None,
         n_epochs=100,
         batch_size=32,
     ):
@@ -74,6 +97,7 @@ class CompileModel(nn.Module):
         criterion
         training_datasets: list[datasets]
         validation_datasets: list[datasets]
+        grid_dataset: dataset, default none
         n_epochs: int, default 100
         batch_size: int default 32
             batch size during training
@@ -86,7 +110,12 @@ class CompileModel(nn.Module):
             The losses per validation dataset
         hidden_states : Dataframe (n_epochs, n_val_datasets, n_inputs)
             Dataframe containing the hidden dimension values for each input and epoch
-            as well as the predicted outputs
+        output_values : Dataframe (n_epochs, n_val_datasets, n_inputs)
+            Dataframe containing the predicted output dimension values for each input and epoch
+        grid_hiddens : list[ndarray(n_grid_points)]
+            The rnn hidden map values each epoch
+        grid_outputs : list[ndarray(n_grid_points)]
+            The rnn output map values each epoch
         """
         # Generate trainloaders
         trainloaders = []
@@ -101,6 +130,7 @@ class CompileModel(nn.Module):
         train_losses = np.zeros(n_epochs)
         val_losses = np.zeros([n_epochs, len(validation_datasets)])
         hidden_states, output_values = [], []
+        grid_hiddens, grid_outputs = [], []
 
         try:
             with trange(n_epochs, desc="Training", unit="steps") as iterator:
@@ -109,10 +139,16 @@ class CompileModel(nn.Module):
                     val_losses[epoch, :], hidden, output = self.validation(
                         criterion, validation_datasets, track=True
                     )
+
+                    # Store intermediate states
                     hidden = pd.concat(hidden, keys=np.arange(len(validation_datasets)))
                     output = pd.concat(output, keys=np.arange(len(validation_datasets)))
                     hidden_states.append(hidden)
                     output_values.append(output)
+                    if grid_dataset is not None:
+                        grid_hidden, grid_output = self.grid_values(grid_dataset)
+                        grid_hiddens.append(grid_hidden)
+                        grid_outputs.append(grid_output)
 
                     # Training step
                     for trainloader in trainloaders:
@@ -125,7 +161,7 @@ class CompileModel(nn.Module):
                         val_loss="{:.5f}".format(val_losses[epoch, 0].item()),
                     )
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             raise e
         finally:
             # Make dataframe with hidden states and outputs
@@ -138,4 +174,14 @@ class CompileModel(nn.Module):
                 ["Epoch", "Dataset", "Input"]
             )
 
-            return train_losses, val_losses, hidden_states, output_values
+            if grid_dataset is None:
+                return train_losses, val_losses, hidden_states, output_values
+            else:
+                return (
+                    train_losses,
+                    val_losses,
+                    hidden_states,
+                    output_values,
+                    grid_hiddens,
+                    grid_outputs,
+                )
