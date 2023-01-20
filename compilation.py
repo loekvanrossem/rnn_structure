@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.utils.data import DataLoader
 
 import numpy as np
 import pandas as pd
@@ -8,7 +9,7 @@ from tqdm import trange
 
 import traceback
 
-
+## TODO: take model as attribute instead of use self
 class CompileModel(nn.Module):
     def validation(self, criterion, validation_datasets, track=False):
         """
@@ -32,9 +33,7 @@ class CompileModel(nn.Module):
         hidden_states, output_values = [], []
         for i, dataset in enumerate(validation_datasets):
             # Compute loss
-            valloader = torch.utils.data.DataLoader(
-                dataset, batch_size=len(dataset), shuffle=False
-            )
+            valloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
             for batch in valloader:
                 inputs, outputs = batch
                 prediction, hidden = self(inputs)
@@ -63,7 +62,7 @@ class CompileModel(nn.Module):
         return losses
 
     def grid_values(self, grid_dataset):
-        gridloader = torch.utils.data.DataLoader(
+        gridloader = DataLoader(
             grid_dataset, batch_size=len(grid_dataset), shuffle=False
         )
         for batch in gridloader:
@@ -117,13 +116,12 @@ class CompileModel(nn.Module):
         grid_outputs : list[ndarray(n_grid_points)]
             The rnn output map values each epoch
         """
+        n_val_datasets = len(validation_datasets)
         # Generate trainloaders
         trainloaders = []
         for dataset in training_datasets:
             trainloaders.append(
-                torch.utils.data.DataLoader(
-                    dataset, batch_size=batch_size, shuffle=True
-                )
+                DataLoader(dataset, batch_size=batch_size, shuffle=True)
             )
 
         # Train
@@ -141,8 +139,8 @@ class CompileModel(nn.Module):
                     )
 
                     # Store intermediate states
-                    hidden = pd.concat(hidden, keys=np.arange(len(validation_datasets)))
-                    output = pd.concat(output, keys=np.arange(len(validation_datasets)))
+                    hidden = pd.concat(hidden, keys=list(range(n_val_datasets)))
+                    output = pd.concat(output, keys=list(range(n_val_datasets)))
                     hidden_states.append(hidden)
                     output_values.append(output)
                     if grid_dataset is not None:
@@ -165,11 +163,11 @@ class CompileModel(nn.Module):
             raise e
         finally:
             # Make dataframe with hidden states and outputs
-            hidden_states = pd.concat(hidden_states, keys=np.arange(n_epochs))
+            hidden_states = pd.concat(hidden_states, keys=list(range(n_epochs)))
             hidden_states.index = hidden_states.index.set_names(
                 ["Epoch", "Dataset", "Input"]
             )
-            output_values = pd.concat(output_values, keys=np.arange(n_epochs))
+            output_values = pd.concat(output_values, keys=list(range(n_epochs)))
             output_values.index = output_values.index.set_names(
                 ["Epoch", "Dataset", "Input"]
             )

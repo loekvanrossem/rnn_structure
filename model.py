@@ -7,7 +7,9 @@ from compilation import CompileModel
 from preprocessing import Encoding
 
 
-class Model(CompileModel):
+class Model(
+    CompileModel,
+):
     """
     Many to one RNN
 
@@ -78,7 +80,7 @@ class Model(CompileModel):
         return out, hidden
 
     def init_hidden(self, batch_size):
-        hidden = torch.zeros(
+        hidden = torch.ones(
             self.n_layers, batch_size, self.hidden_dim, device=self.device
         )
         return hidden

@@ -10,6 +10,7 @@ from IPython.display import display
 import gif
 
 from typing import Optional
+from tqdm import trange
 
 from preprocessing import Encoding
 
@@ -133,6 +134,7 @@ def hidden_repr(
 
     first_epoch = hidden_states.index.get_level_values("Epoch").min()
     last_epoch = hidden_states.index.get_level_values("Epoch").max()
+    n_epochs = last_epoch - first_epoch
 
     def smallest_dist(point, labels_x_pos, labels_y_pos):
         distances = 0.25 * (point[0] - np.array(labels_x_pos)) ** 2 + (
@@ -187,6 +189,8 @@ def hidden_repr(
                     labels_y_pos.append(pos[1])
 
     ## Make gif
+    n_steps = 500
+    step_size = int(np.ceil(n_epochs / n_steps))
     if gif_path is not None:
 
         @gif.frame
@@ -195,10 +199,13 @@ def hidden_repr(
             update_positions(points_1, points_2, ax_1, ax_2, epoch)
 
         frames = []
-        for epoch in range(first_epoch, last_epoch, 10):
+        iterator = trange(
+            first_epoch, last_epoch, step_size, desc="Making gif", unit="frames"
+        )
+        for epoch in iterator:
             frames.append(frame(epoch))
 
-        gif.save(frames, gif_path + ".gif", duration=100)
+        gif.save(frames, gif_path + ".gif", duration=50)
 
     ## Make interactive plot
     fig_interactive, points_1, points_2, ax_1, ax_2 = make_figure()
