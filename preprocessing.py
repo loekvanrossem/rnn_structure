@@ -1,8 +1,9 @@
+from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
 
-class Encoding:
+class Encoding(ABC):
     """
     A way of encoding data.
 
@@ -10,6 +11,8 @@ class Encoding:
     ----------
     encoding : dict
         A dictionary with the symbols to encode as keys and the neural activities as values
+    symbols : list
+        A list of all possible symbols
 
     Methods
     -------
@@ -27,6 +30,10 @@ class Encoding:
         self._decoding = {}
         for key, value in encoding.items():
             self._decoding[tuple(value)] = key
+
+    @property
+    def symbols(self) -> list:
+        return list(self.encoding.keys())
 
     @property
     def encoding(self):
@@ -56,17 +63,9 @@ class Encoding:
 
 
 class OneHot(Encoding):
-    """
-    Encode by sending each symbol to a vector with a single one and zeros everywhere else.
-
-    Attributes
-    ----------
-    symbols : list
-        An ordered list of symbols
-    """
+    """Encode by sending each symbol to a vector with a single one and zeros everywhere else."""
 
     def __init__(self, symbols: list):
-        self.symbols = symbols
         encoding = {}
         for i, symbol in enumerate(symbols):
             vector = np.zeros(len(symbols))

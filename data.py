@@ -1,7 +1,12 @@
-import numpy as np
 import torch
-from torch.utils.data import TensorDataset
+from torch.utils.data import TensorDataset, Dataset
+
+import numpy as np
 import random
+
+from typing import Callable, Optional
+
+from preprocessing import Encoding
 
 
 def gen_rand_seq(n, symbols, n_sequences):
@@ -14,7 +19,13 @@ def gen_rand_seq(n, symbols, n_sequences):
     return sequences
 
 
-def seq_data(device, problem, encoding, n_datapoints=None, seq_len=4):
+def seq_data(
+    device: torch.device,
+    problem: Callable,
+    encoding: Encoding,
+    n_datapoints: Optional[int] = None,
+    seq_len: int = 4,
+) -> TensorDataset:
     """
     Generate data solving some problem on sequences.
 
@@ -33,7 +44,7 @@ def seq_data(device, problem, encoding, n_datapoints=None, seq_len=4):
 
     Returns
     -------
-    dataset : Torch Dataset
+    dataset : TensorDataset
         Contains the inputs and outputs
     """
     symbols = encoding.symbols
@@ -53,7 +64,13 @@ def seq_data(device, problem, encoding, n_datapoints=None, seq_len=4):
     return dataset
 
 
-def grid_data(device, dim=2, output_dim=2, n=100, bounds=(0, 1)):
+def grid_data(
+    device: torch.device,
+    dim: int = 2,
+    output_dim: int = 2,
+    n: int = 100,
+    bounds: tuple[float, float] = (0, 1),
+) -> TensorDataset:
     """
     Generate a grid of datapoints.
 
@@ -72,7 +89,7 @@ def grid_data(device, dim=2, output_dim=2, n=100, bounds=(0, 1)):
 
     Returns
     -------
-    dataset : Torch Dataset
+    dataset : TensorDataset
         Contains the inputs and nans for outputs
     """
     # Generate inputs

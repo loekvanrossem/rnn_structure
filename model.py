@@ -1,15 +1,13 @@
 import torch
 from torch import nn
+from torch.optim import Optimizer
 
 import numpy as np
 
-from compilation import CompileModel
 from preprocessing import Encoding
 
 
-class Model(
-    CompileModel,
-):
+class Model(nn.Module):
     """
     Many to one RNN
 
@@ -87,16 +85,17 @@ class Model(
 
     def sqr_dist(self, X: torch.Tensor):
         dist = (
-            torch.diagonal(torch.tensordot(X, X, dims=([1], [1])))
-            + -2 * torch.tensordot(X, X.mT, dims=([1], [0]))
-            + torch.diagonal(torch.tensordot(X.mT, X.mT, dims=([0], [0])))[
+            torch.diagonal(torch.tensordot(X, X, dims=([1], [1])))  # type: ignore
+            + -2 * torch.tensordot(X, X.mT, dims=([1], [0]))  # type: ignore
+            + torch.diagonal(torch.tensordot(X.mT, X.mT, dims=([0], [0])))[  # type: ignore
                 :, np.newaxis
             ]
         )
         return dist
 
-    def train_step(self, optimizer, criterion, dataloader):
+    def train_step(self, optimizer: Optimizer, criterion, dataloader):
         self.train()
+        av_loss = 0
         for batch in dataloader:
             inputs, outputs = batch
             noise = np.random.normal(size=outputs.size()) * self.output_noise
@@ -112,6 +111,7 @@ class Model(
             # dist_reg = torch.norm(self.sqr_dist(torch.squeeze(hidden[-1])))
 
             loss = criterion(torch.squeeze(output), torch.squeeze(outputs))
+
             # loss = 0.5 * dist_reg + criterion(
             #     torch.squeeze(output), torch.squeeze(outputs)
             # )
@@ -121,4 +121,5 @@ class Model(
 
             loss.backward()
             optimizer.step()
-        return loss
+            av_loss += loss / len(dataloader)
+        return av_loss

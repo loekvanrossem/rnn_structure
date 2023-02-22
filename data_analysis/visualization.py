@@ -1,3 +1,6 @@
+from typing import Optional
+from tqdm import trange
+
 import numpy as np
 import pandas as pd
 from sklearn.manifold import MDS
@@ -8,9 +11,6 @@ import matplotlib.patheffects as pe
 from ipywidgets import Layout, interact, IntSlider
 from IPython.display import display
 import gif
-
-from typing import Optional
-from tqdm import trange
 
 from preprocessing import Encoding
 
@@ -95,7 +95,7 @@ def hidden_repr(
                     zorder=3,
                     markeredgecolor="black",
                 )
-                if plot_labels and (type(input_name) == str):
+                if plot_labels and isinstance(input_name, str):
                     label = ax.text(
                         x_values[last_epoch],
                         y_values[last_epoch],
@@ -134,7 +134,7 @@ def hidden_repr(
 
     first_epoch = hidden_states.index.get_level_values("Epoch").min()
     last_epoch = hidden_states.index.get_level_values("Epoch").max()
-    n_epochs = last_epoch - first_epoch
+    # n_epochs = last_epoch - first_epoch
 
     def smallest_dist(point, labels_x_pos, labels_y_pos):
         distances = 0.25 * (point[0] - np.array(labels_x_pos)) ** 2 + (
@@ -189,8 +189,9 @@ def hidden_repr(
                     labels_y_pos.append(pos[1])
 
     ## Make gif
-    n_steps = 500
-    step_size = int(np.ceil(n_epochs / n_steps))
+    # n_steps = 500
+    # step_size = int(np.ceil(n_epochs / n_steps))
+    step_size = 20
     if gif_path is not None:
 
         @gif.frame
