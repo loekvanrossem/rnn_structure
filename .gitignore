@@ -5,3 +5,6 @@ __pycache__/compilation.cpython-310.pyc
 __pycache__/preprocessing.cpython-310.pyc
 hidden_repr.gif
 data_analysis/__pycache__/visualization.cpython-310.pyc
+data_analysis/automata.py
+data_analysis/__pycache__/automata.cpython-310.pyc
+main.ipynb.981b471c687738f32d38b48c9d2af13e.tmp

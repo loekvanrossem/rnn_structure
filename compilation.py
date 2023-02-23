@@ -102,11 +102,28 @@ class ScalarTracker(Tracker):
 
 
 class ActivationTracker(Tracker):
-    """Stores the activations of a layer in response to datasets."""
+    """
+    Stores the activations of a layer in response to datasets.
 
-    def __init__(self, model: Model, track_function: Callable[[Tensor], Tensor]):
+    Attributes
+    ----------
+    model : Model
+        The neural network from which to track activations
+    track function : function(Tensor) -> Tensor
+        The activations to be tracked as a function of the inputs
+    initial : function() -> Tensor, default None
+        If provided, also track the initial hidden activations
+    """
+
+    def __init__(
+        self,
+        model: Model,
+        track_function: Callable[[Tensor], Tensor],
+        initial: Optional[Callable[[], Tensor]] = None,
+    ) -> None:
         self.model = model
         self.track_function = track_function
+        self.initial = initial
         super().__init__()
 
     def track(self, datasets: list[TensorDataset]) -> None:
@@ -136,6 +153,12 @@ class ActivationTracker(Tracker):
                 act_this_epoch.append(act_this_dataset)
 
         act_this_epoch = pd.concat(act_this_epoch, keys=list(range(len(datasets))))
+        if self.initial is not None:
+            initial_hidden = pd.DataFrame(
+                self.initial.cpu().detach().numpy(),
+                index=[np.array([-1]), np.array(["initial"])],
+            )
+            act_this_epoch = pd.concat([act_this_epoch, initial_hidden])
         act_this_epoch.index = act_this_epoch.index.set_names(["Dataset", "Input"])
         self._trace.append(act_this_epoch)
 

@@ -1,10 +1,10 @@
-import torch
-from torch.utils.data import TensorDataset, Dataset
+from typing import Callable, Optional
 
 import numpy as np
 import random
 
-from typing import Callable, Optional
+import torch
+from torch.utils.data import TensorDataset, Dataset
 
 from preprocessing import Encoding
 
