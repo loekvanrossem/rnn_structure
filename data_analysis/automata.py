@@ -1,5 +1,3 @@
-from typing import Callable
-
 import pandas as pd
 import numpy as np
 
@@ -17,6 +15,9 @@ class State:
     def __init__(self, name: str):
         self.name = name
 
+    def __repr__(self):
+        return f"State({self.name})"
+
 
 class Automaton:
     """
@@ -28,10 +29,10 @@ class Automaton:
         The states the automaton can be in during computation
     initial_state : State
         The starting state
-    transition_function : function(state, input_symbol) -> state
-        A function that says to which state each state transitions for a given input symbol
-    output_funtion : function(state) -> output_symbol
-        A function assigning an output_symbol to each state
+    transition_function : dict((state, input_symbol),state)
+        A dictionary that says to which state each state transitions for a given input symbol
+    output_funtion : dict((state),output)
+        A dictionary assigning an output to each state
 
     Methods
     -------
@@ -43,21 +44,20 @@ class Automaton:
         self,
         states: list[State],
         initial_state: State,
-        transition_function: Callable[[State, str], State],
-        output_function: Callable[[State], str],
+        transition_function: dict[tuple[State, str], State],
+        output_function: dict[State, np.ndarray],
     ) -> None:
         self.states = states
         self.initial_state = initial_state
         self.transition_function = transition_function
         self.output_function = output_function
 
-    def compute(self, input_string: str) -> str:
+    def compute(self, input_string: str) -> np.ndarray:
         """Compute the output for a given input string."""
         state = self.initial_state
         for input_symbol in input_string:
-            state = self.transition_function(state, input_symbol)
-        output = self.output_function(state)
-
+            state = self.transition_function[state, input_symbol]
+        output = self.output_function[state]
         return output
 
 
@@ -73,7 +73,7 @@ class AutomatonHistory:
         A history of the initial state
     transitions : dict[tuple[int, State, str], State]
         A history of the transitions of each state
-    outputs : dict[tuple[int, State], str]
+    outputs : dict[tuple[int, State], np.ndarray]
         A history of the outputs per state
     """
 
@@ -82,7 +82,7 @@ class AutomatonHistory:
         states: list[list[State]],
         initial_states: list[State],
         transitions: dict[tuple[int, State, str], State],
-        outputs: dict[tuple[int, State], str],
+        outputs: dict[tuple[int, State], np.ndarray],
     ):
         self.states = states
         self.initial_states = initial_states
@@ -91,12 +91,13 @@ class AutomatonHistory:
 
     def __getitem__(self, epoch: int) -> Automaton:
         """Get the automaton at a certain epoch."""
-        automaton = Automaton(
-            self.states[epoch],
-            self.initial_states[epoch],
-            lambda state, input: self.transitions[epoch, state, input],
-            lambda state: self.outputs[epoch, state],
-        )
+        states = self.states[epoch]
+        initial_state = self.initial_states[epoch]
+        transitions = {
+            (s, i): s_n for (e, s, i), s_n in self.transitions.items() if e == epoch
+        }
+        outputs = {s: o for (e, s), o in self.outputs.items() if e == epoch}
+        automaton = Automaton(states, initial_state, transitions, outputs)
         return automaton
 
 
@@ -122,7 +123,7 @@ def group_activations(
     for input_string, activations in hidden_states.groupby("Input"):
         activation = np.array(activations)[0]
         for group in grouped_activations:
-            if np.linalg.norm(activation - group[1][0]) < merge_distance:
+            if np.linalg.norm(activation - np.mean(group[1], axis=0)) < merge_distance:
                 group[0].append(input_string)
                 group[1].append(activation)
                 break
@@ -144,7 +145,8 @@ def to_automaton_history(
     Parameters
     ----------
     hidden_states : Dataframe (Epoch, Dataset, Input)
-        Dataframe containing the hidden dimension values for each input and epoch
+        Dataframe containing the hidden dimension values for each input and epoch,
+        assumes that the initial values for the hidden dimension have input label "initial"
     output_values : Dataframe(Epoch, Dataset, Input)
         Dataframe containing the output dimension values for each input and epoch
     merge_distance : float
@@ -200,9 +202,15 @@ def to_automaton_history(
         # Get output function
         for state in states_this_epoch:
             input_string = state.name.split(", ")[0]
+            if input_string == "initial":
+                try:
+                    input_string = state.name.split(", ")[1]
+                except IndexError:
+                    outputs[epoch, state] = None
+                    continue
             output = output_values.query(
                 f"Epoch == {epoch} and Input == '{input_string}'"
-            )
+            ).to_numpy()[0]
             outputs[epoch, state] = output
 
         states_last_epoch = states_this_epoch

@@ -8,3 +8,8 @@ data_analysis/__pycache__/visualization.cpython-310.pyc
 data_analysis/automata.py
 data_analysis/__pycache__/automata.cpython-310.pyc
 main.ipynb.981b471c687738f32d38b48c9d2af13e.tmp
+main.ipynb.b32d577b2bb6985f9201f7fbd1333a7e.tmp
+data_analysis/visualization/__pycache__/animation.cpython-310.pyc
+.gitignore
+data_analysis/visualization/__pycache__/automata.cpython-310.pyc
+data_analysis/visualization/__pycache__/visualization.cpython-310.pyc
