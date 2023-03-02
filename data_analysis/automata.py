@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 
 class State:
@@ -162,7 +163,7 @@ def to_automaton_history(
     initial_states = []
     transitions = {}
     outputs = {}
-    for epoch, hidden_states_current in hidden_states.groupby("Epoch"):
+    for epoch, hidden_states_current in tqdm(hidden_states.groupby("Epoch"),desc="Computing automata"):
         # Get states
         states_this_epoch = []
         grouped_activations = group_activations(hidden_states_current, merge_distance)

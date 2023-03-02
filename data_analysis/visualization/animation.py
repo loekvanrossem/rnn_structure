@@ -1,17 +1,16 @@
 from abc import ABC, abstractmethod
-from abc import ABC, abstractmethod
 
+import math
 from tqdm import trange
 
 import matplotlib.pyplot as plt
-import matplotlib.patheffects as pe
 from matplotlib import axes
 from ipywidgets import Layout, interact, IntSlider
 from IPython.display import display
 import gif
 
 
-class SliderSubPlot(ABC):
+class AnimationSubPlot(ABC):
     """
     A plot changing depending on some parameter.
 
@@ -26,12 +25,10 @@ class SliderSubPlot(ABC):
     @abstractmethod
     def plot(self, axes: axes.Axes) -> None:
         """Initial plot."""
-        ...
 
     @abstractmethod
     def update(self, parameter: int) -> None:
         """Update this plot given a certain parameter value."""
-        ...
 
 
 class SliderAnimation:
@@ -54,7 +51,7 @@ class SliderAnimation:
     """
 
     def __init__(
-        self, plots: list[SliderSubPlot], parameters: list[int], fig_size: float = 5
+        self, plots: list[AnimationSubPlot], parameters: list[int], fig_size: float = 5
     ) -> None:
         self.plots = plots
         self.parameters = parameters
@@ -62,18 +59,20 @@ class SliderAnimation:
         self._start()
 
     def _start(self) -> None:
-
-        fig = plt.figure(figsize=(2 * self.fig_size, self.fig_size))
+        n_plots = len(self.plots)
+        n_columns = 2
+        n_rows = math.ceil(n_plots / n_columns)
+        fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
         for n, plot in enumerate(self.plots):
-            axis = fig.add_subplot(120 + (n + 1))
-            plot.plot(axis)
+            axes = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))
+            plot.plot(axes)
         slider = IntSlider(
             description="Epoch:",
             value=self.parameters[0],
             min=self.parameters[0],
             max=self.parameters[-1],
             step=1,
-            layout=Layout(width=f"{int(self.fig_size*7)}%"),
+            layout=Layout(width=f"{int(self.fig_size*8)}%"),
         )
 
         @interact(parameter=slider)

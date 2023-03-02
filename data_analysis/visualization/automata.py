@@ -1,10 +1,14 @@
+from typing import Optional
+
 import numpy as np
 
 from matplotlib import pyplot as plt
 import matplotlib.patheffects as pe
 import matplotlib.patches as patches
+from matplotlib import axes
 
-from data_analysis.automata import Automaton, State
+from data_analysis.automata import Automaton, AutomatonHistory, State
+from data_analysis.visualization import animation
 
 
 def state_placement(automaton: Automaton) -> list[list[State]]:
@@ -72,7 +76,12 @@ def layers_to_coordinates(
     return coordinates
 
 
-def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1.0):
+def display_automata(
+    automaton: Automaton,
+    axes: Optional[axes.Axes] = None,
+    width: float = 1.0,
+    height: float = 1.0,
+):
     """
     Display a drawing of a given automaton.
 
@@ -80,10 +89,12 @@ def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1
     ----------
     Automaton : Automaton
         The automaton to display
+    axes : axes.Axes, optional, default None
+        If provided plot on this axes
     width : float, optional, default 1.0
         The width of the image
     height : float, optional, default 1.0
-        The height of the image    
+        The height of the image
     """
     transitions = automaton.transition_function
     outputs = automaton.output_function
@@ -91,7 +102,8 @@ def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1
     layers = state_placement(automaton)
     coordinates = layers_to_coordinates(layers, width=width, height=height)
 
-    figure, axes = plt.subplots()
+    if not axes:
+        figure, axes = plt.subplots()
     axes.set_xlim(0, width)
     axes.set_ylim(0, height)
     for state, (x, y) in coordinates.items():
@@ -113,13 +125,13 @@ def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1
         #         path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
         #         clip_on=True,
         #     )
-        #     axes.add_artist(input_label)
+        # axes.add_artist(input_label)
         # output = outputs[state]
 
         # Plot outputs
         output = outputs[state]
         if output is not None:
-            output_label = plt.text(
+            axes.text(
                 x - 0.07,
                 y - 0.03,
                 f"{tuple(np.round(output,2))}",
@@ -127,11 +139,10 @@ def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1
                 path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
                 clip_on=True,
             )
-            axes.add_artist(output_label)
 
         # Plot initial state name
         (x, y) = coordinates[initial_state]
-        initial_label = plt.text(
+        axes.text(
             x - 0.04,
             y + 0.03,
             "initial",
@@ -139,7 +150,6 @@ def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1
             path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
             clip_on=True,
         )
-        axes.add_artist(initial_label)
 
         # Plot transitions
         for (prev_state, input_symbol), next_state in transitions.items():
@@ -165,7 +175,7 @@ def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1
                 connectionstyle=f"angle3,angleA=90,angleB={angle}",
             )
             axes.add_artist(transition)
-            transition_label = plt.text(
+            axes.text(
                 0.45 * x_prev + 0.55 * x_next,
                 0.35 * y_prev + 0.65 * y_next,
                 input_symbol,
@@ -173,9 +183,33 @@ def display_automata(automaton: Automaton, width: float = 1.0, height: float = 1
                 path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
                 clip_on=True,
             )
-            axes.add_artist(transition_label)
 
     axes.set_aspect(1)
     axes.get_xaxis().set_visible(False)
     axes.get_yaxis().set_visible(False)
-    plt.show()
+
+
+class AutomatonAnimation(animation.AnimationSubPlot):
+    """
+    Display an automaton varying over time
+
+    automaton_history : AutomatonHistory
+        The automaton history to be displayed
+    """
+
+    def __init__(self, automaton_history: AutomatonHistory):
+        self.automaton_history = automaton_history
+
+    def plot(self, axes: axes.Axes):
+        try:
+            display_automata(self.automaton_history[-1], axes=axes)
+        except KeyError:
+            pass  # Some epochs might not have generated a valid automata
+        self.axes = axes
+
+    def update(self, parameter: int):
+        try:
+            self.axes.clear()
+            display_automata(self.automaton_history[parameter], axes=self.axes)
+        except KeyError:
+            pass  # Some epochs might not have generated a valid automata

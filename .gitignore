@@ -13,3 +13,5 @@ data_analysis/visualization/__pycache__/animation.cpython-310.pyc
 .gitignore
 data_analysis/visualization/__pycache__/automata.cpython-310.pyc
 data_analysis/visualization/__pycache__/visualization.cpython-310.pyc
+data_analysis/visualization/__pycache__/activations.cpython-310.pyc
+main.ipynb.1090e1fb10bf8ba6263872e0c6062a6e.tmp
