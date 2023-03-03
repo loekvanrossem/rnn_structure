@@ -1,19 +1,15 @@
 from typing import Optional
-from tqdm import trange
 
 import numpy as np
 import pandas as pd
 from sklearn.manifold import MDS
 from sklearn.decomposition import PCA
 
-import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
 from matplotlib import axes
-from ipywidgets import Layout, interact, IntSlider
-from IPython.display import display
-import gif
 
 from preprocessing import Encoding
+from data_analysis.visualization.basic_plotting import axes_scale
 from data_analysis.visualization import animation
 
 
@@ -53,6 +49,8 @@ class ActivationsPlot(animation.AnimationSubPlot):
 
     def plot(self, axes: axes.Axes):
         self.axes = axes
+        scale = axes_scale(self.axes)
+
         index = self.activations.index
         data = self.activations
         if data.shape[1] == 1:
@@ -131,8 +129,8 @@ class ActivationsPlot(animation.AnimationSubPlot):
                     zorder=3,
                 )
                 label = self.axes.text(
-                    self.encoding(symbol)[0] + 0.06 * self._scale,
-                    self.encoding(symbol)[1] + 0.06 * self._scale,
+                    self.encoding(symbol)[0] + 0.06 * scale,
+                    self.encoding(symbol)[1] + 0.06 * scale,
                     f"Output {symbol}",
                     path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
                     zorder=4,
@@ -141,6 +139,7 @@ class ActivationsPlot(animation.AnimationSubPlot):
     def update(self, epoch: int):
         labels_x_pos = []
         labels_y_pos = []
+        scale = axes_scale(self.axes)
         for point, input, label in self.points:
             x = float(input.iloc[:, 0][epoch])
             y = float(input.iloc[:, 1][epoch])
@@ -151,25 +150,19 @@ class ActivationsPlot(animation.AnimationSubPlot):
 
             # Position label
             if label is not None:
-                pos = [x + 0.06 * self._scale, y + 0.02 * self._scale]
+                pos = [x + 0.06 * scale, y + 0.02 * scale]
                 if len(labels_x_pos) > 0:
                     while (
                         self._smallest_dist(pos, labels_x_pos, labels_y_pos)
-                        < 0.15 * self._scale
+                        < 0.15 * scale
                     ):
-                        if pos[1] > self.axes.get_ylim()[1] - 0.2 * self._scale:
+                        if pos[1] > self.axes.get_ylim()[1] - 0.4 * scale:
                             break
-                        pos[1] += 0.05 * (
-                            self.axes.get_ylim()[1] - self.axes.get_ylim()[0]
-                        )
+                        pos[1] += 0.4 * scale
+
                 label.set_position(pos)
                 labels_x_pos.append(pos[0])
                 labels_y_pos.append(pos[1])
-
-    @property
-    def _scale(self) -> float:
-        # return self.axes.get_ylim()[1] - self.axes.get_ylim()[0]  # / fig_size
-        return 1
 
     def _smallest_dist(self, point, labels_x_pos, labels_y_pos):
         distances = 0.25 * (point[0] - np.array(labels_x_pos)) ** 2 + (

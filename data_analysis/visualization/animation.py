@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 
 import math
+import matplotlib
 from tqdm import trange
 
 import matplotlib.pyplot as plt
-from matplotlib import axes
+from matplotlib import axes, figure
 from ipywidgets import Layout, interact, IntSlider
 from IPython.display import display
 import gif
@@ -59,13 +60,8 @@ class SliderAnimation:
         self._start()
 
     def _start(self) -> None:
-        n_plots = len(self.plots)
-        n_columns = 2
-        n_rows = math.ceil(n_plots / n_columns)
-        fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
-        for n, plot in enumerate(self.plots):
-            axes = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))
-            plot.plot(axes)
+        fig = self._plot()
+
         slider = IntSlider(
             description="Epoch:",
             value=self.parameters[0],
@@ -81,7 +77,17 @@ class SliderAnimation:
                 plot.update(parameter)
             display(fig)
 
-    def to_gif(self, path: str) -> None:
+    def _plot(self) -> matplotlib.figure.Figure:
+        n_plots = len(self.plots)
+        n_columns = 2
+        n_rows = math.ceil(n_plots / n_columns)
+        fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
+        for n, plot in enumerate(self.plots):
+            axes = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))
+            plot.plot(axes)
+        return fig
+
+    def to_gif(self, path: str, step_size: int = 1) -> None:
         """
         Make a gif.
 
@@ -89,13 +95,15 @@ class SliderAnimation:
         ----------
         path : str
             Save the gif here
+        step_size : int, optional, default 1
+            Number of parameter steps inbetween frames
         """
-        step_size = 20
 
         @gif.frame
         def frame(epoch):
-            fig, points_1, points_2, ax_1, ax_2 = self._initial_plot()
-            self._update(points_1, points_2, ax_1, ax_2, epoch)
+            self._plot()
+            for plot in self.plots:
+                plot.update(epoch)
 
         frames = []
         iterator = trange(
@@ -108,4 +116,4 @@ class SliderAnimation:
         for parameter in iterator:
             frames.append(frame(parameter))
 
-        gif.save(frames, path + ".gif", duration=50)
+        gif.save(frames, path + ".gif", duration=100)

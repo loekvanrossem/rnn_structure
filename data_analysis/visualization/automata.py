@@ -7,6 +7,7 @@ import matplotlib.patheffects as pe
 import matplotlib.patches as patches
 from matplotlib import axes
 
+from data_analysis.visualization.basic_plotting import axes_scale
 from data_analysis.automata import Automaton, AutomatonHistory, State
 from data_analysis.visualization import animation
 
@@ -106,6 +107,9 @@ def display_automata(
         figure, axes = plt.subplots()
     axes.set_xlim(0, width)
     axes.set_ylim(0, height)
+
+    scale = axes_scale(axes)
+
     for state, (x, y) in coordinates.items():
         # Plot states
         radius = 0.02
@@ -152,7 +156,10 @@ def display_automata(
         )
 
         # Plot transitions
+        symbols = []
         for (prev_state, input_symbol), next_state in transitions.items():
+            if input_symbol not in symbols:
+                symbols.append(input_symbol)
             x_prev, y_prev = coordinates[prev_state]
             x_next, y_next = coordinates[next_state]
             slack = 0.15
@@ -175,9 +182,11 @@ def display_automata(
                 connectionstyle=f"angle3,angleA=90,angleB={angle}",
             )
             axes.add_artist(transition)
+            # Add input symbol label
+            symbol_number = symbols.index(input_symbol)
             axes.text(
-                0.45 * x_prev + 0.55 * x_next,
-                0.35 * y_prev + 0.65 * y_next,
+                0.55 * x_prev + 0.45 * x_next + 0.2 * symbol_number * scale,
+                0.4 * y_prev + 0.6 * y_next,
                 input_symbol,
                 fontsize=8,
                 path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
@@ -204,7 +213,7 @@ class AutomatonAnimation(animation.AnimationSubPlot):
         try:
             display_automata(self.automaton_history[-1], axes=axes)
         except KeyError:
-            pass  # Some epochs might not have generated a valid automata
+            pass # Some epochs might not have generated a valid automata
         self.axes = axes
 
     def update(self, parameter: int):
@@ -212,4 +221,4 @@ class AutomatonAnimation(animation.AnimationSubPlot):
             self.axes.clear()
             display_automata(self.automaton_history[parameter], axes=self.axes)
         except KeyError:
-            pass  # Some epochs might not have generated a valid automata
+            self.axes.clear()  # Some epochs might not have generated a valid automata

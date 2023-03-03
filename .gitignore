@@ -3,7 +3,6 @@ __pycache__/data.cpython-310.pyc
 __pycache__/visualization.cpython-310.pyc
 __pycache__/compilation.cpython-310.pyc
 __pycache__/preprocessing.cpython-310.pyc
-hidden_repr.gif
 data_analysis/__pycache__/visualization.cpython-310.pyc
 data_analysis/automata.py
 data_analysis/__pycache__/automata.cpython-310.pyc
@@ -15,3 +14,5 @@ data_analysis/visualization/__pycache__/automata.cpython-310.pyc
 data_analysis/visualization/__pycache__/visualization.cpython-310.pyc
 data_analysis/visualization/__pycache__/activations.cpython-310.pyc
 main.ipynb.1090e1fb10bf8ba6263872e0c6062a6e.tmp
+data_analysis/visualization/__pycache__/basic_plotting.cpython-310.pyc
+animation.gif
