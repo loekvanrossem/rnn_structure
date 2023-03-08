@@ -76,6 +76,11 @@ class AutomatonHistory:
         A history of the transitions of each state
     outputs : dict[tuple[int, State], np.ndarray]
         A history of the outputs per state
+
+    Methods
+    -------
+    get_state_changes() -> tuple[list[int], list[int]]:
+        Return the number of state mergers and splits per epoch.
     """
 
     def __init__(
@@ -100,6 +105,41 @@ class AutomatonHistory:
         outputs = {s: o for (e, s), o in self.outputs.items() if e == epoch}
         automaton = Automaton(states, initial_state, transitions, outputs)
         return automaton
+
+    @staticmethod
+    def _rem_add_to_merg_split(n_removed: int, n_added: int) -> tuple[int, int]:
+        """Compute the number of mergers and splits from the number of removed and added states."""
+        n_mergers = (1 / 3) * (2 * n_removed - n_added)
+        n_splits = (1 / 3) * (2 * n_added - n_removed)
+        # if (not n_mergers.is_integer()) or (not n_splits.is_integer()):
+        #     raise ValueError("Numbers provided do not represent valid state changes")
+        # n_mergers, n_splits = int(n_mergers), int(n_splits)
+        return n_mergers, n_splits
+
+    def get_state_changes(self) -> tuple[list[int], list[int]]:
+        """
+        Return the number of state mergers and splits per epoch.
+
+        Returns
+        -------
+        mergers : list[int]
+            The number of state mergers per epoch
+        splits : list[int]
+            The number of state splits per epoch
+        """
+        mergers = []
+        splits = []
+        old_states = self.states[0]
+        for states in self.states:
+            n_removed = len(set(old_states).difference(set(states)))
+            n_added = len(set(states).difference(set(old_states)))
+            n_mergers, n_splits = self._rem_add_to_merg_split(n_removed, n_added)
+            mergers.append(n_mergers)
+            splits.append(n_splits)
+
+            old_states = states
+
+        return mergers, splits
 
 
 def group_activations(
@@ -158,12 +198,16 @@ def to_automaton_history(
     automaton_history : AutomatonHistory
         An automaton at each epoch representing the neural network during training.
     """
+    outputs_per_input = output_values.droplevel("Dataset")
+
     states = []
     states_last_epoch = []
     initial_states = []
     transitions = {}
     outputs = {}
-    for epoch, hidden_states_current in tqdm(hidden_states.groupby("Epoch"),desc="Computing automata"):
+    for epoch, hidden_states_current in tqdm(
+        hidden_states.groupby("Epoch"), desc="Computing automata"
+    ):
         # Get states
         states_this_epoch = []
         grouped_activations = group_activations(hidden_states_current, merge_distance)
@@ -179,6 +223,9 @@ def to_automaton_history(
         states.append(states_this_epoch)
 
         # Get transition function
+        ## TODO Optimize: Maybe first compute one transition matrix for all states
+        # so we know all possible previous states given symbol+next state
+        # and then reduce to specific epoch
         for state in states_this_epoch:
             group = state.name.split(", ")
             for input_string in group:
@@ -200,6 +247,7 @@ def to_automaton_history(
                 if prev_state is not None:
                     transitions[epoch, prev_state, last_input] = state
 
+        output_this_epoch = outputs_per_input.loc[epoch]
         # Get output function
         for state in states_this_epoch:
             input_string = state.name.split(", ")[0]
@@ -209,9 +257,7 @@ def to_automaton_history(
                 except IndexError:
                     outputs[epoch, state] = None
                     continue
-            output = output_values.query(
-                f"Epoch == {epoch} and Input == '{input_string}'"
-            ).to_numpy()[0]
+            output = output_this_epoch.loc[input_string].to_numpy()
             outputs[epoch, state] = output
 
         states_last_epoch = states_this_epoch

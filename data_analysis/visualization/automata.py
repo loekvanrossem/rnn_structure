@@ -65,13 +65,15 @@ def layers_to_coordinates(
     coordinates : dict[State, tuple[int, int]]
         A pair of x,y coordinates for each state
     """
+    margin_size = 0.5
+    x_step = width / (len(layers) - 1 + 2 * margin_size)
+
     coordinates = {}
-    x_step = width / (len(layers) + 1)
     for n_x, layer in enumerate(layers):
-        x_coordinate = (n_x + 1) * x_step
-        y_step = height / (len(layer) + 1)
+        x_coordinate = (n_x + margin_size) * x_step
+        y_step = height / (len(layer) - 1 + 2 * margin_size)
         for n_y, state in enumerate(layer):
-            y_coordinate = (n_y + 1) * y_step
+            y_coordinate = (n_y + margin_size) * y_step
             coordinates[state] = (x_coordinate, y_coordinate)
 
     return coordinates
@@ -136,7 +138,7 @@ def display_automata(
         output = outputs[state]
         if output is not None:
             axes.text(
-                x - 0.07,
+                x - 0.08,
                 y - 0.03,
                 f"{tuple(np.round(output,2))}",
                 fontsize=8,
@@ -162,14 +164,14 @@ def display_automata(
                 symbols.append(input_symbol)
             x_prev, y_prev = coordinates[prev_state]
             x_next, y_next = coordinates[next_state]
-            slack = 0.15
+            slack = 0.05
             x_start = (1 - slack) * x_prev + slack * x_next
             y_start = (1 - slack) * y_prev + slack * y_next
             y_end = slack * y_prev + (1 - slack) * y_next
             x_end = slack * x_prev + (1 - slack) * x_next
             if prev_state == next_state:
-                x_start -= 0.02
-                y_start += 0.02
+                x_start -= 0.03
+                y_start += 0.01
                 x_end += 0.03
                 y_end += 0.01
                 angle = 115
@@ -180,13 +182,15 @@ def display_automata(
                 (x_end, y_end),
                 arrowstyle="Fancy,head_length=3,head_width=3",
                 connectionstyle=f"angle3,angleA=90,angleB={angle}",
+                shrinkA=10,
+                shrinkB=10,
             )
             axes.add_artist(transition)
             # Add input symbol label
             symbol_number = symbols.index(input_symbol)
             axes.text(
                 0.55 * x_prev + 0.45 * x_next + 0.2 * symbol_number * scale,
-                0.4 * y_prev + 0.6 * y_next,
+                0.2 * y_prev + 0.8 * y_next + 0.2 * scale,
                 input_symbol,
                 fontsize=8,
                 path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
@@ -213,7 +217,7 @@ class AutomatonAnimation(animation.AnimationSubPlot):
         try:
             display_automata(self.automaton_history[-1], axes=axes)
         except KeyError:
-            pass # Some epochs might not have generated a valid automata
+            pass  # Some epochs might not have generated a valid automata
         self.axes = axes
 
     def update(self, parameter: int):

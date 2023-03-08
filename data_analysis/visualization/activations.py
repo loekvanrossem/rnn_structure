@@ -136,7 +136,8 @@ class ActivationsPlot(animation.AnimationSubPlot):
                     zorder=4,
                 )
 
-    def update(self, epoch: int):
+    def update(self, parameter: int):
+        epoch = parameter
         labels_x_pos = []
         labels_y_pos = []
         scale = axes_scale(self.axes)
@@ -156,7 +157,7 @@ class ActivationsPlot(animation.AnimationSubPlot):
                         self._smallest_dist(pos, labels_x_pos, labels_y_pos)
                         < 0.15 * scale
                     ):
-                        if pos[1] > self.axes.get_ylim()[1] - 0.4 * scale:
+                        if pos[1] > self.axes.get_ylim()[1] - 0.8 * scale:
                             break
                         pos[1] += 0.4 * scale
 

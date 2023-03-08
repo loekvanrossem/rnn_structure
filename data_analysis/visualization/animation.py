@@ -82,6 +82,7 @@ class SliderAnimation:
         n_columns = 2
         n_rows = math.ceil(n_plots / n_columns)
         fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
+        fig.subplots_adjust(wspace=0.1, hspace=0.1)
         for n, plot in enumerate(self.plots):
             axes = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))
             plot.plot(axes)
@@ -116,4 +117,4 @@ class SliderAnimation:
         for parameter in iterator:
             frames.append(frame(parameter))
 
-        gif.save(frames, path + ".gif", duration=100)
+        gif.save(frames, path + ".gif", duration=70)
