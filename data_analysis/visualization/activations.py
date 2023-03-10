@@ -1,4 +1,5 @@
 from typing import Optional
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -7,13 +8,16 @@ from sklearn.decomposition import PCA
 
 import matplotlib.patheffects as pe
 from matplotlib import axes
+import matplotlib.style as mplstyle
 
 from preprocessing import Encoding
 from data_analysis.visualization.basic_plotting import axes_scale
 from data_analysis.visualization import animation
 
+mplstyle.use("fast")
 
-class ActivationsPlot(animation.AnimationSubPlot):
+
+class ActivationsAnimation(animation.AnimationSubPlot):
     """
     Plot activations varying per epoch
 
@@ -47,9 +51,9 @@ class ActivationsPlot(animation.AnimationSubPlot):
         self.encoding = encoding
         self.plot_labels = plot_labels
 
-    def plot(self, axes: axes.Axes):
-        self.axes = axes
-        scale = axes_scale(self.axes)
+    def plot(self, ax: axes.Axes):
+        self.ax = ax
+        scale = axes_scale(self.ax)
 
         index = self.activations.index
         data = self.activations
@@ -75,7 +79,7 @@ class ActivationsPlot(animation.AnimationSubPlot):
             for input_name, input in dataset.groupby("Input"):
                 x_values = input.iloc[:, 0]
                 y_values = input.iloc[:, 1]
-                line = self.axes.plot(x_values, y_values, label=input_name, zorder=0)
+                line = self.ax.plot(x_values, y_values, label=input_name, zorder=0)
                 color = line[0].get_color()
                 first_epoch = data.index.get_level_values("Epoch").min()
                 last_epoch = data.index.get_level_values("Epoch").max()
@@ -87,14 +91,14 @@ class ActivationsPlot(animation.AnimationSubPlot):
                     base=np.e,
                 ).astype(int)
                 for epoch in log_range:
-                    self.axes.scatter(
+                    self.ax.scatter(
                         x_values[epoch], y_values[epoch], s=10, c="Black", zorder=1
                     )
-                    self.axes.annotate(
+                    self.ax.annotate(
                         epoch, (x_values[epoch], y_values[epoch]), zorder=2
                     )
                 # Add time moveable points
-                point = self.axes.plot(
+                point = self.ax.plot(
                     x_values[last_epoch],
                     y_values[last_epoch],
                     "o",
@@ -103,7 +107,7 @@ class ActivationsPlot(animation.AnimationSubPlot):
                     markeredgecolor="black",
                 )
                 if self.plot_labels and isinstance(input_name, str):
-                    label = self.axes.text(
+                    label = self.ax.text(
                         x_values[last_epoch],
                         y_values[last_epoch],
                         input_name,
@@ -118,17 +122,20 @@ class ActivationsPlot(animation.AnimationSubPlot):
                 points.append((point, input, label))
         self.points = points
 
-        # Add fixed points (WARNING: does not work for transformations)
         if self.encoding is not None:
+            if self.transform != "none":
+                warnings.warn(
+                    "Plotting output decoding does not work for transformations"
+                )
             for symbol in self.encoding.symbols:
-                point = self.axes.plot(
+                point = self.ax.plot(
                     self.encoding(symbol)[0],
                     self.encoding(symbol)[1],
                     "o",
                     c="black",
                     zorder=3,
                 )
-                label = self.axes.text(
+                label = self.ax.text(
                     self.encoding(symbol)[0] + 0.06 * scale,
                     self.encoding(symbol)[1] + 0.06 * scale,
                     f"Output {symbol}",
@@ -140,7 +147,7 @@ class ActivationsPlot(animation.AnimationSubPlot):
         epoch = parameter
         labels_x_pos = []
         labels_y_pos = []
-        scale = axes_scale(self.axes)
+        scale = axes_scale(self.ax)
         for point, input, label in self.points:
             x = float(input.iloc[:, 0][epoch])
             y = float(input.iloc[:, 1][epoch])
@@ -157,7 +164,7 @@ class ActivationsPlot(animation.AnimationSubPlot):
                         self._smallest_dist(pos, labels_x_pos, labels_y_pos)
                         < 0.15 * scale
                     ):
-                        if pos[1] > self.axes.get_ylim()[1] - 0.8 * scale:
+                        if pos[1] > self.ax.get_ylim()[1] - 0.8 * scale:
                             break
                         pos[1] += 0.4 * scale
 

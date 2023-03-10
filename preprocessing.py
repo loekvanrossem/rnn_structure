@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 import numpy as np
 import torch
 
@@ -45,21 +45,19 @@ class Encoding(ABC):
         self._update_decoding(value)
 
     def _parse(self, symbol):
-        if type(symbol) == torch.Tensor:
+        if isinstance(symbol, torch.Tensor):
             symbol = float(symbol)
         return symbol
 
     def __call__(self, data):
         if hasattr(data, "__iter__"):
             return np.array([self(x) for x in data])
-        else:
-            return self.encoding[self._parse(data)]
+        return self.encoding[self._parse(data)]
 
     def decode(self, enc_data):
         if len(enc_data.shape) > 1:
             return np.array([self.decode(x) for x in enc_data])
-        else:
-            return self._decoding[tuple(np.array(enc_data))]
+        return self._decoding[tuple(np.array(enc_data))]
 
 
 class OneHot(Encoding):

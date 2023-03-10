@@ -73,34 +73,6 @@ class ScalarTracker(Tracker):
         self._trace.append(data)
 
 
-# class LossTracker(Tracker):
-#     """Stores average loss of datasets."""
-
-#     def __init__(self, model: Model, criterion):
-#         self.model = model
-#         self.criterion = criterion
-#         super().__init__()
-
-#     def track(self, datasets: list[TensorDataset]) -> None:
-#         """Store the data of this epoch. Should be called each epoch."""
-#         loss = pd.DataFrame()
-#         for i, dataset in enumerate(datasets):
-#             dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
-#             for batch in dataloader:
-#                 inputs, outputs = batch
-#                 loss_this_dataset = self.criterion(
-#                     torch.squeeze(self.model(inputs)[0]), torch.squeeze(outputs)
-#                 )
-#                 loss_this_dataset = (
-#                     torch.squeeze(loss_this_dataset).cpu().detach().numpy()
-#                 )
-#                 loss_this_dataset = pd.DataFrame([loss_this_dataset], [i])
-#                 loss = pd.concat([loss, loss_this_dataset])
-
-#         loss.index = loss.index.set_names(["Dataset"])
-#         self._trace.append(loss)
-
-
 class ActivationTracker(Tracker):
     """
     Stores the activations of a layer in response to datasets.
@@ -195,32 +167,6 @@ class Compiler:
             }
         else:
             self.trackers = trackers
-
-    # def validation(self, validation_datasets) -> np.ndarray:
-    #     """
-    #     Compute loss of validation datasets
-
-    #     Parameters
-    #     ----------
-    #     validation_datasets : list of datasets
-
-    #     Returns
-    #     -------
-    #     losses : np.ndarray(n)
-    #     """
-    #     self.model.eval()
-    #     losses = np.zeros(len(validation_datasets))
-    #     for i, dataset in enumerate(validation_datasets):
-    #         # Compute loss
-    #         valloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
-    #         for batch in valloader:
-    #             inputs, outputs = batch
-    #             prediction, _ = self.model(inputs)
-    #             losses[i] = self.criterion(
-    #                 torch.squeeze(prediction), torch.squeeze(outputs)
-    #             )
-
-    #     return losses
 
     def validation(self, datasets) -> pd.DataFrame:
         loss = pd.DataFrame()

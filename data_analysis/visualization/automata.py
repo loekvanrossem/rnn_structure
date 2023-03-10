@@ -6,10 +6,13 @@ from matplotlib import pyplot as plt
 import matplotlib.patheffects as pe
 import matplotlib.patches as patches
 from matplotlib import axes
+import matplotlib.style as mplstyle
 
 from data_analysis.visualization.basic_plotting import axes_scale
 from data_analysis.automata import Automaton, AutomatonHistory, State
 from data_analysis.visualization import animation
+
+mplstyle.use("fast")
 
 
 def state_placement(automaton: Automaton) -> list[list[State]]:
@@ -28,8 +31,10 @@ def state_placement(automaton: Automaton) -> list[list[State]]:
     """
     transitions = automaton.transition_function
 
+    initial_state = automaton.initial_state
+    layers = [[initial_state]]
     unused_states = automaton.states.copy()
-    layers = [[automaton.initial_state]]
+    unused_states.remove(initial_state)
     for layer in layers:
         new_layer = []
         for state in layer:
@@ -81,7 +86,7 @@ def layers_to_coordinates(
 
 def display_automata(
     automaton: Automaton,
-    axes: Optional[axes.Axes] = None,
+    ax: Optional[axes.Axes] = None,
     width: float = 1.0,
     height: float = 1.0,
 ):
@@ -105,20 +110,20 @@ def display_automata(
     layers = state_placement(automaton)
     coordinates = layers_to_coordinates(layers, width=width, height=height)
 
-    if not axes:
-        figure, axes = plt.subplots()
-    axes.set_xlim(0, width)
-    axes.set_ylim(0, height)
+    if not ax:
+        figure, ax = plt.subplots()
+    ax.set_xlim(0, width)
+    ax.set_ylim(0, height)
 
-    scale = axes_scale(axes)
+    scale = axes_scale(ax)
 
     for state, (x, y) in coordinates.items():
         # Plot states
         radius = 0.02
         circle = plt.Circle((x, y), radius=radius, color="blue")
-        axes.add_artist(circle)
+        ax.add_artist(circle)
         circle_boundary = plt.Circle((x, y), radius=radius, color="black", fill=False)
-        axes.add_artist(circle_boundary)
+        ax.add_artist(circle_boundary)
 
         # Plot names
         # group = state.name.split(", ")
@@ -137,7 +142,7 @@ def display_automata(
         # Plot outputs
         output = outputs[state]
         if output is not None:
-            axes.text(
+            ax.text(
                 x - 0.08,
                 y - 0.03,
                 f"{tuple(np.round(output,2))}",
@@ -148,7 +153,7 @@ def display_automata(
 
         # Plot initial state name
         (x, y) = coordinates[initial_state]
-        axes.text(
+        ax.text(
             x - 0.04,
             y + 0.03,
             "initial",
@@ -185,10 +190,10 @@ def display_automata(
                 shrinkA=10,
                 shrinkB=10,
             )
-            axes.add_artist(transition)
+            ax.add_artist(transition)
             # Add input symbol label
             symbol_number = symbols.index(input_symbol)
-            axes.text(
+            ax.text(
                 0.55 * x_prev + 0.45 * x_next + 0.2 * symbol_number * scale,
                 0.2 * y_prev + 0.8 * y_next + 0.2 * scale,
                 input_symbol,
@@ -197,9 +202,9 @@ def display_automata(
                 clip_on=True,
             )
 
-    axes.set_aspect(1)
-    axes.get_xaxis().set_visible(False)
-    axes.get_yaxis().set_visible(False)
+    ax.set_aspect(1)
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
 
 
 class AutomatonAnimation(animation.AnimationSubPlot):
@@ -213,16 +218,16 @@ class AutomatonAnimation(animation.AnimationSubPlot):
     def __init__(self, automaton_history: AutomatonHistory):
         self.automaton_history = automaton_history
 
-    def plot(self, axes: axes.Axes):
+    def plot(self, ax: axes.Axes):
         try:
-            display_automata(self.automaton_history[-1], axes=axes)
+            display_automata(self.automaton_history[-1], ax=ax)
         except KeyError:
             pass  # Some epochs might not have generated a valid automata
-        self.axes = axes
+        self.ax = ax
 
     def update(self, parameter: int):
         try:
-            self.axes.clear()
-            display_automata(self.automaton_history[parameter], axes=self.axes)
+            self.ax.clear()
+            display_automata(self.automaton_history[parameter], ax=self.ax)
         except KeyError:
-            self.axes.clear()  # Some epochs might not have generated a valid automata
+            self.ax.clear()  # Some epochs might not have generated a valid automata

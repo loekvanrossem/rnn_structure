@@ -94,16 +94,21 @@ class AutomatonHistory:
         self.initial_states = initial_states
         self.transitions = transitions
         self.outputs = outputs
+        self._automata = {}
 
     def __getitem__(self, epoch: int) -> Automaton:
         """Get the automaton at a certain epoch."""
-        states = self.states[epoch]
-        initial_state = self.initial_states[epoch]
-        transitions = {
-            (s, i): s_n for (e, s, i), s_n in self.transitions.items() if e == epoch
-        }
-        outputs = {s: o for (e, s), o in self.outputs.items() if e == epoch}
-        automaton = Automaton(states, initial_state, transitions, outputs)
+        try:
+            automaton = self._automata[epoch]
+        except KeyError:
+            states = self.states[epoch]
+            initial_state = self.initial_states[epoch]
+            transitions = {
+                (s, i): s_n for (e, s, i), s_n in self.transitions.items() if e == epoch
+            }
+            outputs = {s: o for (e, s), o in self.outputs.items() if e == epoch}
+            automaton = Automaton(states, initial_state, transitions, outputs)
+            self._automata[epoch] = automaton
         return automaton
 
     @staticmethod
@@ -164,7 +169,7 @@ def group_activations(
     for input_string, activations in hidden_states.groupby("Input"):
         activation = np.array(activations)[0]
         for group in grouped_activations:
-            if np.linalg.norm(activation - np.mean(group[1], axis=0)) < merge_distance:
+            if np.linalg.norm(activation - group[1][0]) < merge_distance:
                 group[0].append(input_string)
                 group[1].append(activation)
                 break
@@ -223,9 +228,6 @@ def to_automaton_history(
         states.append(states_this_epoch)
 
         # Get transition function
-        ## TODO Optimize: Maybe first compute one transition matrix for all states
-        # so we know all possible previous states given symbol+next state
-        # and then reduce to specific epoch
         for state in states_this_epoch:
             group = state.name.split(", ")
             for input_string in group:
@@ -246,8 +248,10 @@ def to_automaton_history(
                 )
                 if prev_state is not None:
                     transitions[epoch, prev_state, last_input] = state
-
-        output_this_epoch = outputs_per_input.loc[epoch]
+        try:
+            output_this_epoch = outputs_per_input.loc[epoch]
+        except KeyError:
+            pass
         # Get output function
         for state in states_this_epoch:
             input_string = state.name.split(", ")[0]

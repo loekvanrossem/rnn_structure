@@ -16,3 +16,5 @@ data_analysis/visualization/__pycache__/activations.cpython-310.pyc
 main.ipynb.1090e1fb10bf8ba6263872e0c6062a6e.tmp
 data_analysis/visualization/__pycache__/basic_plotting.cpython-310.pyc
 animation.gif
+data_analysis/visualization/__pycache__/epochs.cpython-310.pyc
+.gitignore

@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
 
 import math
-import matplotlib
 from tqdm import trange
 
+import PIL
 import matplotlib.pyplot as plt
 from matplotlib import axes, figure
 from ipywidgets import Layout, interact, IntSlider
-from IPython.display import display
 import gif
 
 
@@ -24,7 +23,7 @@ class AnimationSubPlot(ABC):
     """
 
     @abstractmethod
-    def plot(self, axes: axes.Axes) -> None:
+    def plot(self, ax: axes.Axes) -> None:
         """Initial plot."""
 
     @abstractmethod
@@ -57,10 +56,11 @@ class SliderAnimation:
         self.plots = plots
         self.parameters = parameters
         self.fig_size = fig_size
+        self._buffer = {}
         self._start()
 
     def _start(self) -> None:
-        fig = self._plot()
+        self._fig = self._plot()
 
         slider = IntSlider(
             description="Epoch:",
@@ -68,27 +68,41 @@ class SliderAnimation:
             min=self.parameters[0],
             max=self.parameters[-1],
             step=1,
-            layout=Layout(width=f"{int(self.fig_size*8)}%"),
+            layout=Layout(width=f"{int(15 + self.fig_size*6)}%"),
         )
 
         @interact(parameter=slider)
-        def slider_epochs(parameter):
+        def slider_parameter(parameter):
+            return self._get_frame(parameter)
+
+    def _get_frame(self, parameter) -> PIL.Image.Image:
+        fig = self._fig
+        try:
+            return self._buffer[parameter]
+        except KeyError:
             for plot in self.plots:
                 plot.update(parameter)
-            display(fig)
+            fig.canvas.draw()
+            image = PIL.Image.frombytes(
+                "RGB", fig.canvas.get_width_height(), fig.canvas.tostring_rgb()
+            )
+            self._buffer[parameter] = image
+            return image
 
-    def _plot(self) -> matplotlib.figure.Figure:
+    def _plot(self) -> figure.Figure:
         n_plots = len(self.plots)
         n_columns = 2
         n_rows = math.ceil(n_plots / n_columns)
         fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
-        fig.subplots_adjust(wspace=0.1, hspace=0.1)
+        fig.subplots_adjust(
+            left=0.06, right=0.94, top=0.94, bottom=0.06, wspace=0.1, hspace=0.1
+        )
         for n, plot in enumerate(self.plots):
-            axes = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))
-            plot.plot(axes)
+            ax = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))
+            plot.plot(ax)
         return fig
 
-    def to_gif(self, path: str, step_size: int = 1) -> None:
+    def to_gif(self, path: str, step_size: int = 1, frame_duration: int = 70) -> None:
         """
         Make a gif.
 
@@ -98,14 +112,9 @@ class SliderAnimation:
             Save the gif here
         step_size : int, optional, default 1
             Number of parameter steps inbetween frames
+        frame_duration : int, optional, default 70
+            The number of milliseconds each frame is displayed
         """
-
-        @gif.frame
-        def frame(epoch):
-            self._plot()
-            for plot in self.plots:
-                plot.update(epoch)
-
         frames = []
         iterator = trange(
             self.parameters[0],
@@ -115,6 +124,8 @@ class SliderAnimation:
             unit="frames",
         )
         for parameter in iterator:
-            frames.append(frame(parameter))
+            frames.append(self._get_frame(parameter))
 
-        gif.save(frames, path + ".gif", duration=70)
+        if not path.endswith(".gif"):
+            path += ".gif"
+        gif.save(frames, path, duration=frame_duration)
