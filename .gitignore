@@ -18,3 +18,16 @@ data_analysis/visualization/__pycache__/basic_plotting.cpython-310.pyc
 animation.gif
 data_analysis/visualization/__pycache__/epochs.cpython-310.pyc
 .gitignore
+source/data_analysis/visualization/__pycache__/activations.cpython-310.pyc
+source/data_analysis/visualization/__pycache__/animation.cpython-310.pyc
+source/data_analysis/visualization/__pycache__/automata.cpython-310.pyc
+source/data_analysis/visualization/__pycache__/basic_plotting.cpython-310.pyc
+source/data_analysis/visualization/__pycache__/epochs.cpython-310.pyc
+source/data_analysis/visualization/__pycache__/visualization.cpython-310.pyc
+source/__pycache__/compilation.cpython-310.pyc
+source/__pycache__/data.cpython-310.pyc
+source/__pycache__/preprocessing.cpython-310.pyc
+source/data_analysis/__pycache__/automata.cpython-310.pyc
+source/data_analysis/__pycache__/visualization.cpython-310.pyc
+RNN/__pycache__/model.cpython-310.pyc
+DNN/__pycache__/model.cpython-310.pyc
