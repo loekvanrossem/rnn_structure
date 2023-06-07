@@ -1,0 +1,62 @@
+from typing import Optional
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+import matplotlib.axes as axes
+
+from data_analysis.visualization import animation
+
+
+class EpochAnimation(animation.AnimationSubPlot):
+    """
+    An animation that plots the data for each epoch.
+
+    Attributes
+    ----------
+    graphs: dict[str, np.ndarray]
+        Data per epoch to be plotted.
+    unitless_graphs: dict[str, np.ndarray]
+        Data per epoch to be plotted invariant of bounds.
+    x_bounds: Optional[tuple[float, float]]
+    y_bounds: Optional[tuple[float, float]]
+    """
+
+    def __init__(
+        self,
+        graphs: dict[str, np.ndarray],
+        unitless_graphs: dict[str, np.ndarray],
+        x_bounds: Optional[tuple[float, float]] = None,
+        y_bounds: Optional[tuple[float, float]] = None,
+    ):
+        self.graphs = graphs
+        self.unitless_graphs = unitless_graphs
+        self.x_bounds = x_bounds
+        self.y_bounds = y_bounds
+
+    def plot(self, ax: axes.Axes):
+        for name, data in self.graphs.items():
+            ax.plot(data, label=name, zorder=1)
+
+        if self.x_bounds:
+            plt.xlim(self.x_bounds[0], self.x_bounds[1])
+        if self.y_bounds:
+            plt.ylim(self.y_bounds[0], self.y_bounds[1])
+
+        for name, data in self.unitless_graphs.items():
+            data_normalized = (data - np.min(data)) / (np.max(data) - np.min(data))
+            data_unitless = (
+                data_normalized * (ax.get_ylim()[1] + ax.get_ylim()[0])
+                - ax.get_ylim()[0]
+            ) * 0.5
+            ax.plot(data_unitless, label=name, zorder=0)
+
+        self._vline = ax.axvline(x=0, color="red", linestyle="--")
+
+        plt.legend(loc="upper left")
+        plt.xlabel("Epoch")
+
+        plt.show()
+
+    def update(self, epoch: int):
+        self._vline.set_xdata(epoch)
