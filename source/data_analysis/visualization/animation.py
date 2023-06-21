@@ -42,6 +42,8 @@ class SliderAnimation:
         The subplots
     parameters : list
         The possible parameters for the slider
+    parameter_name : str
+        Name of the parameter
     fig_size : float, optional, default 5
         The size of the figure
 
@@ -52,10 +54,15 @@ class SliderAnimation:
     """
 
     def __init__(
-        self, plots: list[AnimationSubPlot], parameters: list[int], fig_size: float = 5
+        self,
+        plots: list[AnimationSubPlot],
+        parameters: list[int],
+        parameter_name: str,
+        fig_size: float = 5,
     ) -> None:
         self.plots = plots
         self.parameters = parameters
+        self.parameter_name = parameter_name
         self.fig_size = fig_size
         self._buffer = {}
         self._start()
@@ -64,7 +71,7 @@ class SliderAnimation:
         self._fig = self._plot()
 
         slider = IntSlider(
-            description="Epoch:",
+            description=f"{self.parameter_name}:",
             value=self.parameters[0],
             min=self.parameters[0],
             max=self.parameters[-1],

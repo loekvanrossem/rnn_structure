@@ -12,6 +12,8 @@ import pandas as pd
 
 from tqdm import trange
 
+from activations import get_activations
+
 
 class Tracker(ABC):
     """
@@ -97,38 +99,44 @@ class ActivationTracker(Tracker):
 
     def track(self, datasets: list[TensorDataset]) -> None:
         """Store the data of this epoch. Should be called each epoch."""
-        act_this_epoch = []
-        for dataset in datasets:
-            dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
-            for batch in dataloader:
-                inputs, outputs = batch
+        # act_this_epoch = []
+        # for dataset in datasets:
+        #     dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
+        #     for batch in dataloader:
+        #         inputs, outputs = batch
 
-                # Get labels
-                labels = []
-                for input in inputs:
-                    try:
-                        decoding = self.model.encoding.decode(input.cpu())
-                        label = "".join(str(char) for char in decoding)
-                    except KeyError:
-                        label = tuple(np.squeeze(input.cpu()).numpy())
-                    labels.append(label)
+        #         # Get labels
+        #         labels = []
+        #         for input in inputs:
+        #             try:
+        #                 decoding = self.model.encoding.decode(input.cpu())
+        #                 label = "".join(str(char) for char in decoding)
+        #             except KeyError:
+        #                 label = tuple(np.squeeze(input.cpu()).numpy())
+        #             labels.append(label)
 
-                # Store activities
-                act_this_dataset = self.track_function(inputs)
-                act_this_dataset = (
-                    torch.squeeze(act_this_dataset).cpu().detach().numpy()
-                )
-                act_this_dataset = pd.DataFrame(act_this_dataset, labels)
-                act_this_epoch.append(act_this_dataset)
+        #         # Store activities
+        #         act_this_dataset = self.track_function(inputs)
+        #         act_this_dataset = (
+        #             torch.squeeze(act_this_dataset).cpu().detach().numpy()
+        #         )
+        #         act_this_dataset = pd.DataFrame(act_this_dataset, labels)
+        #         act_this_epoch.append(act_this_dataset)
+        # act_this_epoch = pd.concat(act_this_epoch, keys=list(range(len(datasets))))
 
-        act_this_epoch = pd.concat(act_this_epoch, keys=list(range(len(datasets))))
+        act_this_epoch = get_activations(
+            datasets,
+            self.track_function,
+            self.model.encoding,
+        )
+
         if self.initial is not None:
             initial_hidden = pd.DataFrame(
                 self.initial().cpu().detach().numpy(),
                 index=[np.array([-1]), np.array(["initial"])],
             )
             act_this_epoch = pd.concat([act_this_epoch, initial_hidden])
-        act_this_epoch.index = act_this_epoch.index.set_names(["Dataset", "Input"])
+
         self._trace.append(act_this_epoch)
 
 

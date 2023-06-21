@@ -141,14 +141,14 @@ def fun_data(
     """
     if random:
         inputs = np.array(
-            [np.random.uniform(bounds[0], bounds[1], n_datapoints)] * input_dim
+            [np.random.uniform(bounds[0], bounds[1], (input_dim, n_datapoints))]
         )
     else:
         inputs = np.array([np.linspace(bounds[0], bounds[1], n_datapoints)] * input_dim)
-    inputs = inputs.reshape(-1, 1)
+    inputs = inputs.reshape(-1, input_dim)
 
     # Compute outputs
-    outputs = np.apply_along_axis(function, 0, inputs)
+    outputs = np.apply_along_axis(function, 1, inputs)
 
     # Prepare for torch
     # inputs, outputs = encoding(inputs), encoding(outputs)

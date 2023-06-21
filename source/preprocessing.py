@@ -50,7 +50,7 @@ class Encoding(ABC):
         return symbol
 
     def __call__(self, data):
-        if hasattr(data, "__iter__"):
+        if hasattr(data, "__iter__") and not isinstance(data, str):
             return np.array([self(x) for x in data])
         return self.encoding[self._parse(data)]
 

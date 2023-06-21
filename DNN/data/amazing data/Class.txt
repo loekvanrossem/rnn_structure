@@ -1,0 +1,5 @@
+pine oak rose daisy robin canary sunfish salmon
+Swim 0 0 0 0 0 0 1 1
+Fly 0 0 0 0 1 1 0 0
+Branch 1 1 0 0 0 0 0 0
+Petals 0 0 1 1 0 0 0 0

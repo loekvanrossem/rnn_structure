@@ -3,7 +3,6 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from pyparsing import line
 from sklearn.manifold import MDS
 from sklearn.decomposition import PCA
 
@@ -14,7 +13,7 @@ import matplotlib.style as mplstyle
 from preprocessing import Encoding
 from data_analysis.visualization.basic_plotting import axes_scale
 from data_analysis.visualization import animation
-from utils.dataframes import to_ndarray
+import utils.dataframes as dataframes
 
 mplstyle.use("fast")
 
@@ -26,7 +25,7 @@ class PointAnimation(animation.AnimationSubPlot):
 
     Attributes
     ----------
-    activations : np.ndarray[Epoch, Point, 2]
+    points : np.ndarray[Epoch, Point, 2]
         Dataframe containing the point values for each epoch
     labels : np.ndarray, optional
         If provided, label the points
@@ -151,12 +150,21 @@ class ActivationsAnimation(PointAnimation):
         transform: str,
         n_labels: int = 10,
         encoding: Optional[Encoding] = None,
+        fixed_points: Optional[dict] = None,
         plot_labels: bool = True,
         plot_trails: bool = True,
     ):
-        labels = activations.loc[0].index.get_level_values("Input")
-        index = activations.index
-        data = activations
+        data = activations.copy()
+
+        # Add outputs
+        if fixed_points is not None:
+            epochs = set(data.index.get_level_values("Epoch"))
+            for label, point in fixed_points.items():
+                for epoch in epochs:
+                    data.loc[epoch, -1, f"{label}"] = point
+
+        # labels = data.loc[0].index.get_level_values("Input")
+        index = data.index
         if data.shape[1] == 1:
             data["Null"] = pd.Series(0, index=index)
 
@@ -172,24 +180,14 @@ class ActivationsAnimation(PointAnimation):
                 data_red = pca.fit_transform(data)
             case _:
                 raise ValueError("Invalid transform")
+
         data_red = pd.DataFrame(data_red, index=index)
         data_red = data_red.reset_index(level=1, drop=True)
-        data_red = to_ndarray(data_red)
+        points = dataframes.to_ndarray(data_red)
+        data_red = data_red.loc[0]
+        labels = dataframes.to_labels(data_red)[0]
 
-        # Add outputs
-        if encoding is not None:
-            if transform != "none":
-                warnings.warn(
-                    "Plotting output decoding does not work for transformations"
-                )
-            for symbol in encoding.symbols:
-                x, y = encoding(symbol)[0], encoding(symbol)[1]
-                label = f"Output {symbol}"
-
-                data_red = np.append(data_red, [[[x, y]]] * data_red.shape[0], axis=1)
-                labels = np.append(labels, [label])
-
-        self.points = data_red
+        self.points = points
         if plot_labels:
             self.labels = labels
         else:

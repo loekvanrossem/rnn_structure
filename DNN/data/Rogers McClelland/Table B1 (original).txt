@@ -1,0 +1,37 @@
+Context Property pine oak rose daisy robin canary sunfish salmon
+ISA... Living thing 1 1 1 1 1 1 1 1
+Plant 1 1 1 1 0 0 0 0
+Animal 0 0 0 0 1 1 1 1
+Tree 1 1 0 0 0 0 0 0
+Flower 0 0 1 1 0 0 0 0
+Bird 0 0 0 0 1 1 0 0
+Fish 0 0 0 0 0 0 1 1
+Pine 1 0 0 0 0 0 0 0
+Oak 0 1 0 0 0 0 0 0
+Rose 0 0 1 0 0 0 0 0
+Daisy 0 0 0 1 0 0 0 0
+Robin 0 0 0 0 1 0 0 0
+Canary 0 0 0 0 0 1 0 0
+Sunfish 0 0 0 0 0 0 1 0
+Salmon 0 0 0 0 0 0 0 1
+Is... Pretty 0 0 1 1 0 0 0 0
+Big 1 1 0 0 0 0 0 0
+Living 1 1 1 1 1 1 1 1
+Green 1 0 0 0 0 0 0 0
+Red 0 0 1 0 1 0 0 1
+Yellow 0 0 0 1 0 1 1 0
+Can... Grow 1 1 1 1 1 1 1 1
+Move 0 0 0 0 1 1 1 1
+Swim 0 0 0 0 0 0 1 1
+Fly 0 0 0 0 1 1 0 0
+Sing 0 0 0 0 0 1 0 0
+Has... Skin 0 0 0 0 1 1 1 1
+Roots 1 1 1 1 0 0 0 0
+Leaves 0 1 1 1 0 0 0 0
+Bark 1 1 0 0 0 0 0 0
+Branch 1 1 0 0 0 0 0 0
+Petals 0 0 1 1 0 0 0 0
+Wings 0 0 0 0 1 1 0 0
+Feathers 0 0 0 0 1 1 0 0
+Gills 0 0 0 0 0 0 1 1
+Scales 0 0 0 0 0 0 1 1

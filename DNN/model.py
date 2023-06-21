@@ -23,8 +23,8 @@ class Model(nn.ModuleList):
         The number of hidden layers
     device : device
         The device to put the model on
-    init_std : float, default 0.1
-        The standard deviation of the initial rnn weight distribution
+    init_std : float, default 1
+        The standard deviation of the initial weight distribution
     """
 
     def __init__(
@@ -35,14 +35,15 @@ class Model(nn.ModuleList):
         hidden_dim: int,
         n_hid_layers: int,
         device: torch.device,
-        init_std: float = 0.1,
+        init_std: float = 1,
     ):
         super(Model, self).__init__()
 
         self.device = device
         self.non_linearity = torch.nn.functional.leaky_relu
         # self.non_linearity = torch.nn.functional.sigmoid
-        # self.non_linearity = torch.nn.functional.tanh
+        # self.non_linearity = lambda x: torch.nn.functional.tanh(x)
+
         self.encoding = encoding
 
         # Defining the layers

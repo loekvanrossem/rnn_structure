@@ -73,3 +73,24 @@ DNN/plots/lower_parameters/2pointsnodiff/gain0.4.gif
 DNN/plots/lower_parameters/2pointsnodiff/gain0.6.gif
 DNN/plots/lower_parameters/2pointsnodiff/gain0.8.gif
 DNN/plots/lower_parameters/2pointsnodiff/gain1.gif
+DNN/plots/Failure_to_generalize_at_maximum_derivative.gif
+DNN/plots/Partial Out-of-dataset generalization.gif
+DNN/plots/validation_loss_sine_gain0.5.html
+DNN/plots/validation_loss_sine.html
+DNN/plots/validation_loss-train_loss_sine_gain0.5.html
+DNN/plots/validation_loss-train_loss.html
+RNN/example.gif
+RNN/generalization_mod3.gif
+RNN/post_generalization_behaviour.gif
+DNN/plots/circle/gain0.5.gif
+DNN/plots/circle/gain0.7.gif
+DNN/plots/circle/gain0.7overlap0.5.gif
+DNN/plots/circle/gain0.8overlap0.5.gif
+DNN/plots/circle/gain0.9.gif
+DNN/plots/circle/gain1.1.gif
+DNN/plots/circle/gain1.3.gif
+DNN/plots/circle/gain1.5.gif
+DNN/plots/circle/gain1overlap0.5.gif
+source/__pycache__/activations.cpython-310.pyc
+source/utils/__pycache__/dataframes.cpython-310.pyc
+source/utils/__pycache__/dataframes.cpython-310.pyc
