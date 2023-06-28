@@ -43,7 +43,7 @@ class Tracker(ABC):
 
     def get_trace(self) -> pd.DataFrame:
         """
-        Return the stored activities.
+        Return all stored data.
 
         Returns
         -------
@@ -54,6 +54,10 @@ class Tracker(ABC):
         trace = pd.concat(self._trace, keys=list(range(len(self._trace))))
         trace.index = trace.index.set_names(["Epoch"] + index_names)
         return trace
+
+    def get_entry(self, epoch):
+        """Return data at specific epoch."""
+        return self._trace[epoch]
 
     def reset(self) -> None:
         """Delete stored data"""
@@ -251,9 +255,9 @@ class Compiler:
                 try:
                     val_loss = (
                         self.trackers["loss"]
-                        .get_trace()
+                        .get_entry(-1)
                         .query("Dataset==0")
-                        .to_numpy()[-1, 0]
+                        .to_numpy()[0, 0]
                     )
                 except KeyError:
                     val_loss = np.NaN

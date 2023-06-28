@@ -25,7 +25,7 @@ class EpochAnimation(animation.AnimationSubPlot):
     def __init__(
         self,
         graphs: dict[str, np.ndarray],
-        unitless_graphs: dict[str, np.ndarray],
+        unitless_graphs: Optional[dict[str, np.ndarray]] = None,
         x_bounds: Optional[tuple[float, float]] = None,
         y_bounds: Optional[tuple[float, float]] = None,
     ):
@@ -43,13 +43,14 @@ class EpochAnimation(animation.AnimationSubPlot):
         if self.y_bounds:
             plt.ylim(self.y_bounds[0], self.y_bounds[1])
 
-        for name, data in self.unitless_graphs.items():
-            data_normalized = (data - np.min(data)) / (np.max(data) - np.min(data))
-            data_unitless = (
-                data_normalized * (ax.get_ylim()[1] + ax.get_ylim()[0])
-                - ax.get_ylim()[0]
-            ) * 0.5
-            ax.plot(data_unitless, label=name, zorder=0)
+        if self.unitless_graphs:
+            for name, data in self.unitless_graphs.items():
+                data_normalized = (data - np.min(data)) / (np.max(data) - np.min(data))
+                data_unitless = (
+                    data_normalized * (ax.get_ylim()[1] + ax.get_ylim()[0])
+                    - ax.get_ylim()[0]
+                ) * 0.5
+                ax.plot(data_unitless, label=name, zorder=0)
 
         self._vline = ax.axvline(x=0, color="red", linestyle="--")
 

@@ -1,21 +1,22 @@
 from typing import Optional, Callable
-import warnings
 
 import numpy as np
 import pandas as pd
 from sklearn.manifold import MDS
 from sklearn.decomposition import PCA
 
+import plotly.express as px
 import matplotlib.patheffects as pe
 from matplotlib import axes
 import matplotlib.style as mplstyle
 
-from preprocessing import Encoding
 from data_analysis.visualization.basic_plotting import axes_scale
 from data_analysis.visualization import animation
 import utils.dataframes as dataframes
 
 mplstyle.use("fast")
+
+COLORS = px.colors.qualitative.Plotly
 
 
 ## Add static points
@@ -37,11 +38,16 @@ class PointAnimation(animation.AnimationSubPlot):
         self,
         points: np.ndarray,
         labels: Optional[np.ndarray] = None,
+        colors: Optional[list[int]] = None,
         plot_trails: bool = True,
     ):
         self.points = points
         self.labels = labels
         self.plot_trails = plot_trails
+        if colors:
+            self.colors = colors
+        else:
+            self.colors = [0] * points.shape[1]
 
     def plot(self, ax: axes.Axes):
         self.ax = ax
@@ -49,7 +55,9 @@ class PointAnimation(animation.AnimationSubPlot):
             self.labels = [None] * len(self.points[0])
 
         graphics = []
-        for label, point in zip(self.labels, np.swapaxes(self.points, 0, 1)):
+        for label, point, color in zip(
+            self.labels, np.swapaxes(self.points, 0, 1), self.colors
+        ):
             x_values, y_values = point[:, 0], point[:, 1]
             x_value, y_value = x_values[0], y_values[0]
 
@@ -58,7 +66,7 @@ class PointAnimation(animation.AnimationSubPlot):
                 x_value,
                 y_value,
                 "o",
-                # c=color,
+                c=COLORS[color],
                 zorder=3,
                 markeredgecolor="black",
             )
@@ -132,12 +140,7 @@ class ActivationsAnimation(PointAnimation):
         Dataframe containing the activations values for each input and epoch
     transform : str
         The type of dimensionality reduction to use: none, PCA or MDS
-    n_labels : int, default 10
-        The number of epochs which will be labeled
-    fig_size : float, default 5
-        The size of the figure
-    encoding : Encoding, default None
-        If provided, also plot the encoded symbol values
+
     plot_labels : Bool, default True
         If true plot the input names of each datapoint
     plot_trails : bool, optional, default True
@@ -148,8 +151,6 @@ class ActivationsAnimation(PointAnimation):
         self,
         activations: pd.DataFrame,
         transform: str,
-        n_labels: int = 10,
-        encoding: Optional[Encoding] = None,
         fixed_points: Optional[dict] = None,
         plot_labels: bool = True,
         plot_trails: bool = True,
@@ -161,9 +162,8 @@ class ActivationsAnimation(PointAnimation):
             epochs = set(data.index.get_level_values("Epoch"))
             for label, point in fixed_points.items():
                 for epoch in epochs:
-                    data.loc[epoch, -1, f"{label}"] = point
+                    data.loc[epoch, -1, f"{label}"] = np.array(point)
 
-        # labels = data.loc[0].index.get_level_values("Input")
         index = data.index
         if data.shape[1] == 1:
             data["Null"] = pd.Series(0, index=index)
@@ -178,21 +178,33 @@ class ActivationsAnimation(PointAnimation):
             case "PCA":
                 pca = PCA(n_components=2)
                 data_red = pca.fit_transform(data)
+            case "PCA_per_epoch":
+                data_red = data.copy().iloc[:, 0:2]
+                for epoch in data.groupby("Epoch"):
+                    pca = PCA(n_components=2)
+                    data_red.loc[epoch[0]] = pca.fit_transform(epoch[1])
+            case "MDS_per_epoch":
+                data_red = data.copy().iloc[:, 0:2]
+                for epoch in data.groupby("Epoch"):
+                    mds = MDS(n_components=2)
+                    data_red.loc[epoch[0]] = mds.fit_transform(epoch[1])
             case _:
                 raise ValueError("Invalid transform")
 
         data_red = pd.DataFrame(data_red, index=index)
+        datasets = dataframes.to_labels(
+            data_red.query("Epoch == 0").reset_index(level=(0, 2), drop=True)
+        )[0]
         data_red = data_red.reset_index(level=1, drop=True)
         points = dataframes.to_ndarray(data_red)
         data_red = data_red.loc[0]
-        labels = dataframes.to_labels(data_red)[0]
-
-        self.points = points
         if plot_labels:
-            self.labels = labels
+            labels = dataframes.to_labels(data_red)[0]
         else:
-            self.labels = None
-        self.plot_trails = plot_trails
+            labels = None
+        colors = [int(c) for c in datasets]
+
+        super().__init__(points, labels, colors, plot_trails)
 
 
 class FunctionAnimation(PointAnimation):

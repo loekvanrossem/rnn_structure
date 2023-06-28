@@ -22,14 +22,14 @@ class Encoding(ABC):
         Decode a list of neural activities
     """
 
-    def __init__(self, encoding: dict):
+    def __init__(self, encoding: dict[str, np.ndarray]):
         self.encoding = encoding
         self._update_decoding(encoding)
 
     def _update_decoding(self, encoding):
         self._decoding = {}
         for key, value in encoding.items():
-            self._decoding[tuple(value)] = key
+            self._decoding[self._parse_value(value)] = key
 
     @property
     def symbols(self) -> list:
@@ -44,20 +44,26 @@ class Encoding(ABC):
         self._encoding = value
         self._update_decoding(value)
 
-    def _parse(self, symbol):
+    def _parse_symbol(self, symbol):
         if isinstance(symbol, torch.Tensor):
             symbol = float(symbol)
         return symbol
 
+    def _parse_value(self, value):
+        value = np.array(value, dtype=np.float32)
+        value = np.round(value, 10)
+        value = tuple(value)
+        return value
+
     def __call__(self, data):
         if hasattr(data, "__iter__") and not isinstance(data, str):
             return np.array([self(x) for x in data])
-        return self.encoding[self._parse(data)]
+        return self.encoding[self._parse_symbol(data)]
 
     def decode(self, enc_data):
         if len(enc_data.shape) > 1:
             return np.array([self.decode(x) for x in enc_data])
-        return self._decoding[tuple(np.array(enc_data))]
+        return self._decoding[self._parse_value(enc_data)]
 
 
 class OneHot(Encoding):

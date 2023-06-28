@@ -1,5 +1,6 @@
 from typing import Callable
 
+import numpy as np
 import pandas as pd
 
 import torch
@@ -29,6 +30,7 @@ def get_activations(
         Dataframe containing the activations
     """
     activations = []
+    warn_label = False
     for dataset in datasets:
         dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
         for batch in dataloader:
@@ -42,14 +44,18 @@ def get_activations(
                     label = "".join(str(char) for char in decoding)
                 except KeyError:
                     label = tuple(np.squeeze(input.cpu()).numpy())
+                    warn_label = True
                 labels.append(label)
 
             # Store activities
             act_this_dataset = output_function(inputs)
-            act_this_dataset = torch.squeeze(act_this_dataset).cpu().detach().numpy()
+            act_this_dataset = act_this_dataset.cpu().detach().numpy()
             act_this_dataset = pd.DataFrame(act_this_dataset, labels)
             activations.append(act_this_dataset)
     activations = pd.concat(activations, keys=list(range(len(datasets))))
     activations.index = activations.index.set_names(["Dataset", "Input"])
+
+    if warn_label:
+        print("Some input labels were not recognized.")
 
     return activations
