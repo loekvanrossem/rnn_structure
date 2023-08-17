@@ -98,7 +98,7 @@ class PointAnimation(animation.AnimationSubPlot):
         epoch = parameter
         labels_x_pos = []
         labels_y_pos = []
-        scale = axes_scale(self.ax)
+        scale_x, scale_y = axes_scale(self.ax)
         for point_graphic, point, label in self._points:
             x = float(point[epoch, 0])
             y = float(point[epoch, 1])
@@ -109,15 +109,15 @@ class PointAnimation(animation.AnimationSubPlot):
 
             # Position label
             if label is not None:
-                pos = [x + 0.06 * scale, y + 0.02 * scale]
+                pos = [x + 0.06 * scale_x, y + 0.02 * scale_y]
                 if len(labels_x_pos) > 0:
                     while (
                         self._smallest_dist(pos, labels_x_pos, labels_y_pos)
-                        < 0.15 * scale
+                        < 0.15 * scale_y
                     ):
-                        if pos[1] > self.ax.get_ylim()[1] - 0.8 * scale:
+                        if pos[1] > self.ax.get_ylim()[1] - 0.8 * scale_y:
                             break
-                        pos[1] += 0.4 * scale
+                        pos[1] += 0.4 * scale_y
 
                 label.set_position(pos)
                 labels_x_pos.append(pos[0])
@@ -156,6 +156,9 @@ class ActivationsAnimation(PointAnimation):
         plot_trails: bool = True,
     ):
         data = activations.copy()
+        data.columns = data.columns.astype(str)
+        self.epochs = list(set(data.index.get_level_values("Epoch")))
+        self.epochs.sort()
 
         # Add outputs
         if fixed_points is not None:
@@ -173,7 +176,7 @@ class ActivationsAnimation(PointAnimation):
             case "none":
                 data_red = data.iloc[:, 0:2]
             case "MDS":
-                mds = MDS(n_components=2)
+                mds = MDS(n_components=2, normalized_stress="auto")
                 data_red = mds.fit_transform(data)
             case "PCA":
                 pca = PCA(n_components=2)
@@ -186,7 +189,7 @@ class ActivationsAnimation(PointAnimation):
             case "MDS_per_epoch":
                 data_red = data.copy().iloc[:, 0:2]
                 for epoch in data.groupby("Epoch"):
-                    mds = MDS(n_components=2)
+                    mds = MDS(n_components=2, normalized_stress="auto")
                     data_red.loc[epoch[0]] = mds.fit_transform(epoch[1])
             case _:
                 raise ValueError("Invalid transform")
@@ -205,6 +208,9 @@ class ActivationsAnimation(PointAnimation):
         colors = [int(c) for c in datasets]
 
         super().__init__(points, labels, colors, plot_trails)
+
+    def update(self, parameter: int):
+        super().update(self.epochs.index(parameter))
 
 
 class FunctionAnimation(PointAnimation):

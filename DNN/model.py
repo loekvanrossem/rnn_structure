@@ -5,7 +5,7 @@ from torch.optim import Optimizer
 from preprocessing import Encoding
 
 
-class Model(nn.ModuleList):
+class MLP(nn.ModuleList):
     """
     A simple non-linear feedforward DNN
 
@@ -36,13 +36,12 @@ class Model(nn.ModuleList):
         n_hid_layers: int,
         device: torch.device,
         init_std: float = 1,
+        non_linearity=torch.nn.functional.leaky_relu,
     ):
-        super(Model, self).__init__()
+        super(MLP, self).__init__()
 
         self.device = device
-        self.non_linearity = torch.nn.functional.leaky_relu
-        # self.non_linearity = torch.nn.functional.sigmoid
-        # self.non_linearity = lambda x: torch.nn.functional.tanh(x)
+        self.non_linearity = non_linearity
 
         self.encoding = encoding
 
@@ -69,7 +68,7 @@ class Model(nn.ModuleList):
         activations = []
         for n, layer in enumerate(self):
             a = layer(a)
-            if n != len(self):
+            if n != len(self) - 1:
                 a = self.non_linearity(a)
             activations.append(a)
 
@@ -92,3 +91,110 @@ class Model(nn.ModuleList):
             optimizer.step()
             av_loss += loss / len(dataloader)
         return av_loss
+
+
+class CNN(MLP):
+    def __init__(
+        self,
+        encoding: Encoding,
+        input_size: int,
+        output_size: int,
+        hidden_dim: int,
+        n_hid_layers: int,
+        device: torch.device,
+        init_std: float = 1,
+        non_linearity=torch.nn.functional.leaky_relu,
+    ):
+        super(MLP, self).__init__()
+
+        kernel_size = 11
+
+        self.device = device
+        self.non_linearity = non_linearity
+
+        self.encoding = encoding
+
+        # Defining the layers
+        for n in range(n_hid_layers + 1):
+            self.append(
+                nn.Conv1d(
+                    1, 1, kernel_size, padding=int((kernel_size - 1) / 2), bias=True
+                )
+            )
+
+        # Initialize the parameters
+        for mod in self.modules():
+            if isinstance(mod, nn.Conv1d):
+                nn.init.xavier_normal_(mod.weight, gain=init_std)
+                nn.init.zeros_(mod.bias)
+
+        self.to(device)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+
+        a = x
+        activations = []
+        for n, layer in enumerate(self):
+            a = layer(a)
+            if n != len(self) - 1:
+                a = self.non_linearity(a)
+            activations.append(a)
+
+        activations = [layer.squeeze() for layer in activations]
+
+        output = activations.pop()
+
+        return output, activations
+
+
+class ResNet(MLP):
+    def __init__(
+        self,
+        encoding: Encoding,
+        input_size: int,
+        output_size: int,
+        hidden_dim: int,
+        n_hid_layers: int,
+        device: torch.device,
+        init_std: float = 1,
+        non_linearity=torch.nn.functional.leaky_relu,
+    ):
+        super(MLP, self).__init__()
+
+        self.device = device
+        self.non_linearity = non_linearity
+
+        self.encoding = encoding
+
+        # Defining the layers
+        for n in range(n_hid_layers + 1):
+            dim_in, dim_out = hidden_dim, hidden_dim
+            if n == 0:
+                dim_in = input_size
+            if n == n_hid_layers:
+                dim_out = output_size
+
+            self.append(nn.Linear(dim_in, dim_out, bias=True))
+
+        # Initialize the parameters
+        for mod in self.modules():
+            if isinstance(mod, nn.Linear):
+                nn.init.xavier_normal_(mod.weight, gain=init_std)
+                nn.init.zeros_(mod.bias)
+
+        self.to(device)
+
+    def forward(self, x):
+        a = x
+        activations = []
+        for n, layer in enumerate(self):
+            a_copy = a.clone()
+            a = layer(a)
+            if n != len(self) - 1:
+                a = self.non_linearity(a) + a_copy
+            activations.append(a)
+
+        output = activations.pop()
+
+        return output, activations

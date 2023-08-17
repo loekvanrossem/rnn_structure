@@ -18,7 +18,7 @@ def get_activations(
     Parameters
     ----------
     dataset : list[Dataset]
-        A list of datasets t
+        A list of datasets
     output_function : Callable
         Function defining the activation response to an input
     encoding : Encoding

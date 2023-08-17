@@ -96,3 +96,75 @@ source/utils/__pycache__/dataframes.cpython-310.pyc
 source/utils/__pycache__/dataframes.cpython-310.pyc
 source/utils/__pycache__/dataframes.cpython-310.pyc
 source/utils/__pycache__/dataframes.cpython-310.pyc
+DNN/data/MNIST/MNIST/raw/t10k-images-idx3-ubyte
+DNN/data/MNIST/MNIST/raw/t10k-images-idx3-ubyte.gz
+DNN/data/MNIST/MNIST/raw/t10k-labels-idx1-ubyte
+DNN/data/MNIST/MNIST/raw/t10k-labels-idx1-ubyte.gz
+DNN/data/MNIST/MNIST/raw/train-images-idx3-ubyte
+DNN/data/MNIST/MNIST/raw/train-images-idx3-ubyte.gz
+DNN/data/MNIST/MNIST/raw/train-labels-idx1-ubyte
+DNN/data/MNIST/MNIST/raw/train-labels-idx1-ubyte.gz
+DNN/data/MNIST/MNISThint/raw/t10k-images-idx3-ubyte
+DNN/data/MNIST/MNISThint/raw/t10k-images-idx3-ubyte.gz
+DNN/data/MNIST/MNISThint/raw/t10k-labels-idx1-ubyte
+DNN/data/MNIST/MNISThint/raw/t10k-labels-idx1-ubyte.gz
+DNN/data/MNIST/MNISThint/raw/train-images-idx3-ubyte
+DNN/data/MNIST/MNISThint/raw/train-images-idx3-ubyte.gz
+DNN/data/MNIST/MNISThint/raw/train-labels-idx1-ubyte
+DNN/data/MNIST/MNISThint/raw/train-labels-idx1-ubyte.gz
+DNN/data/MNIST/raw/t10k-images-idx3-ubyte
+DNN/data/MNIST/raw/t10k-images-idx3-ubyte.gz
+DNN/data/MNIST/raw/t10k-labels-idx1-ubyte
+DNN/data/MNIST/raw/t10k-labels-idx1-ubyte.gz
+DNN/data/MNIST/raw/train-images-idx3-ubyte
+DNN/data/MNIST/raw/train-images-idx3-ubyte.gz
+DNN/data/MNIST/raw/train-labels-idx1-ubyte
+DNN/data/MNIST/raw/train-labels-idx1-ubyte.gz
+DNN/data/MNIST processed/X_dist.npy
+DNN/plots/feature_gain_0.7.png
+DNN/plots/feature_gain_1.7.png
+DNN/plots/rel_log_feature_gain_0.7.png
+DNN/plots/rel_log_feature_gain_1.7.png
+DNN/plots/2 points/D0_vs_h_CNN.png
+DNN/plots/2 points/D0_vs_h_ELU.png
+DNN/plots/2 points/D0_vs_h_leaky_RELU.png
+DNN/plots/2 points/D0_vs_h_ResNet.png
+DNN/plots/2 points/D0_vs_h_softplus.png
+DNN/plots/2 points/gain_vs_h_ELU.png
+DNN/plots/2 points/gain_vs_h_leaky_RELU.png
+DNN/plots/2 points/gain_vs_h_sigmoid.png
+DNN/plots/2 points/split_theory_vs_simulationoutput.png
+DNN/plots/mnist/feature_gain0.01.png
+DNN/plots/mnist/feature_gain0.1.png
+DNN/plots/mnist/feature_gain0.2.png
+DNN/plots/mnist/feature_gain0.3.png
+DNN/plots/mnist/feature_gain0.05.png
+DNN/plots/mnist/feature_gain0.5.png
+DNN/plots/mnist/feature_gain1.5.png
+DNN/plots/mnist/feature_gain1.png
+DNN/plots/mnist/feature_gain2.png
+DNN/plots/mnist/log_val_acc_gain0.001.png
+DNN/plots/mnist/log_val_acc_gain0.01.png
+DNN/plots/mnist/log_val_acc_gain0.1.png
+DNN/plots/mnist/log_val_acc_gain0.2.png
+DNN/plots/mnist/log_val_acc_gain0.3.png
+DNN/plots/mnist/log_val_acc_gain0.05.png
+DNN/plots/mnist/log_val_acc_gain0.5.png
+DNN/plots/mnist/log_val_acc_gain1.5.png
+DNN/plots/mnist/log_val_acc_gain1.png
+DNN/plots/mnist/log_val_acc_gain2.png
+DNN/plots/mnist/rel_feature_gain0.01.png
+DNN/plots/mnist/rel_feature_gain0.1.png
+DNN/plots/mnist/rel_feature_gain0.2.png
+DNN/plots/mnist/rel_feature_gain0.3.png
+DNN/plots/mnist/rel_feature_gain0.05.png
+DNN/plots/mnist/rel_feature_gain0.5.png
+DNN/plots/mnist/rel_feature_gain1.5.png
+DNN/plots/mnist/rel_feature_gain1.png
+DNN/plots/mnist/rel_feature_gain2.png
+DNN/plots/mnist_theory/labelsAxyhint.png
+DNN/plots/mnist_theory/labelsAyyhint.png
+DNN/plots/mnist_theory/labelsBxyhint.png
+DNN/plots/mnist_theory/labelsByyhint.png
+source/data_analysis/__pycache__/features.cpython-310.pyc
+source/data_analysis/visualization/__pycache__/publication.cpython-310.pyc

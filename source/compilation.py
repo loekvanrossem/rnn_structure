@@ -139,6 +139,8 @@ class ActivationTracker(Tracker):
                 self.initial().cpu().detach().numpy(),
                 index=[np.array([-1]), np.array(["initial"])],
             )
+            initial_hidden.index = initial_hidden.index.set_names(["Dataset", "Input"])
+
             act_this_epoch = pd.concat([act_this_epoch, initial_hidden])
 
         self._trace.append(act_this_epoch)
@@ -234,7 +236,11 @@ class Compiler:
         n_train_data = 0
         for dataset in training_datasets:
             trainloaders.append(
-                DataLoader(dataset, batch_size=batch_size, shuffle=True)
+                DataLoader(
+                    dataset,
+                    batch_size=batch_size,
+                    shuffle=True,
+                )
             )
             n_train_data += len(dataset)
 

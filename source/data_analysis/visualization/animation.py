@@ -2,12 +2,12 @@ from abc import ABC, abstractmethod
 
 
 import math
-from tqdm import trange
+from tqdm import trange, tqdm
 
 from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib import axes, figure
-from ipywidgets import Layout, interact, IntSlider
+from ipywidgets import Layout, interact, IntSlider, SelectionSlider
 import gif
 
 
@@ -38,8 +38,8 @@ class SliderAnimation:
 
     Attributes
     ----------
-    plots : list[SliderSubPlot]
-        The subplots
+    plots : dict[str, AnimationSubPlot]
+        The subplots, indexed by their titles
     parameters : list
         The possible parameters for the slider
     parameter_name : str
@@ -55,7 +55,7 @@ class SliderAnimation:
 
     def __init__(
         self,
-        plots: list[AnimationSubPlot],
+        plots: dict[str, AnimationSubPlot],
         parameters: list[int],
         parameter_name: str,
         fig_size: float = 5,
@@ -70,13 +70,10 @@ class SliderAnimation:
     def _start(self) -> None:
         self._fig = self._plot()
 
-        slider = IntSlider(
-            description=f"{self.parameter_name}:",
+        slider = SelectionSlider(
+            options=self.parameters,
             value=self.parameters[0],
-            min=self.parameters[0],
-            max=self.parameters[-1],
-            step=1,
-            layout=Layout(width=f"{int(15 + self.fig_size*6)}%"),
+            description=f"{self.parameter_name}:",
         )
 
         @interact(parameter=slider)
@@ -88,7 +85,7 @@ class SliderAnimation:
         try:
             return self._buffer[parameter]
         except KeyError:
-            for plot in self.plots:
+            for plot in self.plots.values():
                 plot.update(parameter)
             fig.canvas.draw()
             image = Image.frombytes(
@@ -103,14 +100,15 @@ class SliderAnimation:
         n_rows = math.ceil(n_plots / n_columns)
         fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
         fig.subplots_adjust(
-            left=0.06, right=0.94, top=0.94, bottom=0.06, wspace=0.1, hspace=0.1
+            left=0.1, right=0.9, top=0.94, bottom=0.06, wspace=0.1, hspace=0.2
         )
-        for n, plot in enumerate(self.plots):
+        for n, (title, plot) in enumerate(self.plots.items()):
             ax = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))
             plot.plot(ax)
+            ax.set_title(title)
         return fig
 
-    def to_gif(self, path: str, step_size: int = 1, frame_duration: int = 70) -> None:
+    def to_gif(self, path: str, frame_duration: int = 70) -> None:
         """
         Make a gif.
 
@@ -118,16 +116,12 @@ class SliderAnimation:
         ----------
         path : str
             Save the gif here
-        step_size : int, optional, default 1
-            Number of parameter steps inbetween frames
         frame_duration : int, optional, default 70
             The number of milliseconds each frame is displayed
         """
         frames = []
-        iterator = trange(
-            self.parameters[0],
-            self.parameters[-1],
-            step_size,
+        iterator = tqdm(
+            self.parameters,
             desc="Making gif",
             unit="frames",
         )

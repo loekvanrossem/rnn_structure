@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.axes as axes
 
 from data_analysis.visualization import animation
+from data_analysis.visualization.publication import pub_show
 
 
 class EpochAnimation(animation.AnimationSubPlot):
@@ -36,7 +37,9 @@ class EpochAnimation(animation.AnimationSubPlot):
 
     def plot(self, ax: axes.Axes):
         for name, data in self.graphs.items():
-            ax.plot(data, label=name, zorder=1)
+            line = ax.plot(data, label=name, zorder=1)
+            x_axis = line[0].get_xdata()
+            ax.fill_between(x_axis, data.squeeze(), alpha=0.2, zorder=0)
 
         if self.x_bounds:
             plt.xlim(self.x_bounds[0], self.x_bounds[1])
@@ -50,9 +53,10 @@ class EpochAnimation(animation.AnimationSubPlot):
                     data_normalized * (ax.get_ylim()[1] + ax.get_ylim()[0])
                     - ax.get_ylim()[0]
                 ) * 0.5
-                ax.plot(data_unitless, label=name, zorder=0)
+                ax.plot(data_unitless, label=name, zorder=2)
 
         self._vline = ax.axvline(x=0, color="red", linestyle="--")
+        self._vline.set_visible(False)
 
         plt.legend(loc="upper left")
         plt.xlabel("Epoch")
@@ -60,4 +64,5 @@ class EpochAnimation(animation.AnimationSubPlot):
         plt.show()
 
     def update(self, epoch: int):
+        self._vline.set_visible(True)
         self._vline.set_xdata(epoch)

@@ -115,7 +115,7 @@ def display_automata(
     ax.set_xlim(0, width)
     ax.set_ylim(0, height)
 
-    scale = axes_scale(ax)
+    scale_x, scale_y = axes_scale(ax)
 
     for state, (x, y) in coordinates.items():
         # Plot states
@@ -196,8 +196,8 @@ def display_automata(
             # Add input symbol label
             symbol_number = symbols.index(input_symbol)
             ax.text(
-                0.55 * x_prev + 0.45 * x_next + 0.2 * symbol_number * scale,
-                0.2 * y_prev + 0.8 * y_next + 0.2 * scale,
+                0.55 * x_prev + 0.45 * x_next + 0.2 * symbol_number * scale_x,
+                0.2 * y_prev + 0.8 * y_next + 0.2 * scale_y,
                 input_symbol,
                 fontsize=8,
                 path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
