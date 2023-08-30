@@ -1,3 +1,4 @@
+import matplotlib
 from matplotlib import rc, rcParams, cycler
 from matplotlib import pyplot as plt
 import matplotlib.patheffects as pe
@@ -25,6 +26,41 @@ COLORS_MIXED = [
     "EF6642",
 ]
 COLORS_CONTRAST = ["FF044F", "760AC0", "00D950", "9F82C9", "471664"]
+
+
+cdict_seq = {
+    "red": (
+        (0.0, 64 / 255, 64 / 255),
+        (0.2, 112 / 255, 112 / 255),
+        (0.4, 230 / 255, 230 / 255),
+        (0.6, 253 / 255, 253 / 255),
+        (0.8, 244 / 255, 244 / 255),
+        (1.0, 169 / 255, 169 / 255),
+    ),
+    "green": (
+        (0.0, 57 / 255, 57 / 255),
+        (0.2, 198 / 255, 198 / 255),
+        (0.4, 241 / 255, 241 / 255),
+        (0.6, 219 / 255, 219 / 255),
+        (0.8, 109 / 255, 109 / 255),
+        (1.0, 23 / 255, 23 / 255),
+    ),
+    "blue": (
+        (0.0, 144 / 255, 144 / 255),
+        (0.2, 162 / 255, 162 / 255),
+        (0.4, 146 / 255, 146 / 255),
+        (0.6, 127 / 255, 127 / 255),
+        (0.8, 69 / 255, 69 / 255),
+        (1.0, 69 / 255, 69 / 255),
+    ),
+}
+COLORMAP_SEQUENTIAL = matplotlib.colors.LinearSegmentedColormap(
+    "COLORMAP_SEQUENTIAL", segmentdata=cdict_seq
+)
+try:
+    matplotlib.colormaps.register(COLORMAP_SEQUENTIAL)
+except ValueError:
+    pass
 
 
 def pub_show(colors="mixed"):
@@ -113,7 +149,7 @@ def pub_show(colors="mixed"):
         legend.get_frame().set_linewidth(2)
 
     # Axes
-    n_ticks = 3 + int(fig.get_figheight() * 0.75)
+    n_ticks = 3 + int(fig.get_figheight() * 0.5)
     plt.locator_params(nbins=n_ticks - 1, min_n_ticks=n_ticks)
     ax.grid("on", alpha=0.4, linestyle="--")
     border_color = "0.25"
@@ -129,5 +165,26 @@ def pub_show(colors="mixed"):
         points.set_alpha(0.5)
     if len(ax.get_lines()) > 0 and len(ax.collections) == 1:
         ax.collections[0].set_color("0.5")
+
+    # Images
+    rc("image", cmap="COLORMAP_SEQUENTIAL")
+    if len(ax.get_images()) == 1:
+        ax.grid(False)
+        ax.spines[["right", "top"]].set_visible(True)
+        plt.tick_params(
+            axis="both",
+            which="both",
+            bottom=False,
+            left=False,
+            right=False,
+            top=False,
+            labelbottom=False,
+            labelleft=False,
+        )
+        for spine in ax.spines.values():
+            spine.set_edgecolor("black")
+        fig.colorbar(
+            matplotlib.cm.ScalarMappable(cmap=COLORMAP_SEQUENTIAL), ax=ax, shrink=1
+        )
 
     plt.show()
