@@ -137,7 +137,7 @@ def pub_show(colors="mixed"):
     if n_labels > 0:
         legend = plt.legend(
             # [text.get_text() for text in legend.get_texts()],
-            loc="upper right",
+            # loc="upper right",
             fancybox=True,
             framealpha=0.9,
             shadow=True,
