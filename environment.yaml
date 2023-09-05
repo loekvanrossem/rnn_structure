@@ -10,8 +10,11 @@ dependencies:
   - scipy
   - pandas>=2.0.0
   - pytables
-  - matplotlib
   - scikit-learn
+
+  - matplotlib
+  - gif
+  - plotly
 
   # The below should only be run on a node with a GPU!
   - conda-forge::cudatoolkit>=11.8
