@@ -1,20 +1,48 @@
+from typing import Optional
+
 import matplotlib
 from matplotlib import rc, rcParams, cycler
 from matplotlib import pyplot as plt
 import matplotlib.patheffects as pe
 from matplotlib.axis import Axis
 
+# COLORS_GRADIENT = [
+#     "f92485",
+#     "b4189f",
+#     "7409b9",
+#     "540dab",
+#     "480da7",
+#     "3d0ba2",
+#     "3f37ca",
+#     "4461ed",
+#     "4a93f1",
+#     "4bc9f1",
+# ]
 COLORS_GRADIENT = [
-    "f92485",
-    "b4189f",
-    "7409b9",
-    "540dab",
-    "480da7",
-    "3d0ba2",
-    "3f37ca",
-    "4461ed",
-    "4a93f1",
-    "4bc9f1",
+    [
+        "4bc9f1",
+        "4a93f1",
+        "4461ed",
+        "3f37ca",
+        "3d0ba2",
+        "480da7",
+        "540dab",
+        "7409b9",
+        "b4189f",
+        "f92485",
+    ],
+    [
+        "2a4858",
+        "215d6e",
+        "08737f",
+        "00898a",
+        "089f8f",
+        "39b48e",
+        "64c987",
+        "92dc7e",
+        "c4ec74",
+        "fafa6e",
+    ],
 ]
 COLORS_MIXED = [
     "138086",
@@ -63,21 +91,24 @@ except ValueError:
     pass
 
 
-def pub_show(colors="mixed"):
-    match colors:
-        case "mixed":
+def pub_show(colors: str = "mixed", save_path: Optional[str] = None):
+    match colors.split():
+        case ["mixed"]:
             color_scheme = COLORS_MIXED
-        case "gradient":
-            color_scheme = COLORS_GRADIENT
-        case "contrast":
+        case ["gradient"]:
+            color_scheme = COLORS_GRADIENT[0]
+        case ["gradient", n]:
+            color_scheme = COLORS_GRADIENT[int(n) - 1]
+        case ["contrast"]:
             color_scheme = COLORS_CONTRAST
+    rcParams["axes.prop_cycle"] = cycler(color=color_scheme)
 
     # rc("font", **{"sans-serif": "Go Medium"})
     # rc("font", **{"sans-serif": "Noto Sans Math"})
     rcParams.update({"text.usetex": True, "font.family": "Helvetica"})
 
     SMALL_SIZE = 13
-    MEDIUM_SIZE = 16
+    MEDIUM_SIZE = 15
     BIGGER_SIZE = 20
 
     plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
@@ -93,59 +124,27 @@ def pub_show(colors="mixed"):
 
     # rcParams["figure.dpi"] = 200
 
-    alpha = 0.1
-    color = "w"
-    linewidth = 3.5
-    path_effects = [
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(1.4, 0), alpha=alpha, foreground=color
-        ),
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(-1.4, 0), alpha=alpha, foreground=color
-        ),
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(0, -1.4), alpha=alpha, foreground=color
-        ),
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(0, 1.4), alpha=alpha, foreground=color
-        ),
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(1, 1), alpha=alpha, foreground=color
-        ),
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(-1, 1), alpha=alpha, foreground=color
-        ),
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(1, -1), alpha=alpha, foreground=color
-        ),
-        pe.SimpleLineShadow(
-            linewidth=linewidth, offset=(-1, -1), alpha=alpha, foreground=color
-        ),
-        pe.Normal(),
-    ]
-
     # Lines
-    rcParams["axes.prop_cycle"] = cycler(color=color_scheme)
     for line in ax.get_lines():
-        line.set_linewidth(3)
+        line.set_linewidth(2)
         line.set_solid_capstyle("round")
-        Axis.set_path_effects(line, path_effects)
 
     # Legend
-    n_labels = len(ax.get_legend_handles_labels()[0])
+    # n_labels = len(ax.get_legend_handles_labels()[0])
     # legend = ax.get_legend()
-    if n_labels > 0:
+    if ax.get_legend():
         legend = plt.legend(
             # [text.get_text() for text in legend.get_texts()],
-            # loc="upper right",
+            loc="upper right",
             fancybox=True,
             framealpha=0.9,
             shadow=True,
             borderpad=0.6,
             edgecolor="0.7",
+            handlelength=1.5,
         )
         for line in legend.get_lines():
-            line.set_linewidth(3)
+            line.set_linewidth(2.5)
         legend.get_frame().set_linewidth(2)
 
     # Axes
@@ -166,6 +165,40 @@ def pub_show(colors="mixed"):
     if len(ax.get_lines()) > 0 and len(ax.collections) == 1:
         ax.collections[0].set_color("0.5")
 
+        # Add glow
+        alpha = 0.05
+        color = "w"
+        linewidth = 2.5
+        path_effects = [
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(1.4, 0), alpha=alpha, foreground=color
+            ),
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(-1.4, 0), alpha=alpha, foreground=color
+            ),
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(0, -1.4), alpha=alpha, foreground=color
+            ),
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(0, 1.4), alpha=alpha, foreground=color
+            ),
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(1, 1), alpha=alpha, foreground=color
+            ),
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(-1, 1), alpha=alpha, foreground=color
+            ),
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(1, -1), alpha=alpha, foreground=color
+            ),
+            pe.SimpleLineShadow(
+                linewidth=linewidth, offset=(-1, -1), alpha=alpha, foreground=color
+            ),
+            pe.Normal(),
+        ]
+        for line in ax.get_lines():
+            Axis.set_path_effects(line, path_effects)
+
     # Images
     rc("image", cmap="COLORMAP_SEQUENTIAL")
     if len(ax.get_images()) == 1:
@@ -183,8 +216,15 @@ def pub_show(colors="mixed"):
         )
         for spine in ax.spines.values():
             spine.set_edgecolor("black")
-        fig.colorbar(
-            matplotlib.cm.ScalarMappable(cmap=COLORMAP_SEQUENTIAL), ax=ax, shrink=1
+        cb = fig.colorbar(
+            matplotlib.cm.ScalarMappable(cmap=COLORMAP_SEQUENTIAL),
+            ax=ax,
+            shrink=0.8,
+            aspect=15,
         )
+        cb.outline.set_linewidth(2)
+
+    if save_path:
+        plt.savefig(save_path, dpi=200)
 
     plt.show()

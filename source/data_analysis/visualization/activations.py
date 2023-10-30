@@ -238,19 +238,19 @@ class FunctionAnimation(PointAnimation):
 
         self.line_data = []
 
-        self.points = train_points
-        self.labels = None
-        self.plot_trails = False
+        points = train_points
         self.y_bounds = y_bounds
 
         if true_function:
             true_points_train = self._true_points(train_points, true_function)
             true_points_test = self._true_points(test_points, true_function)
 
-            self.points = np.concatenate((self.points, true_points_train), axis=1)
+            points = np.concatenate((points, true_points_train), axis=1)
             self.line_data.append(true_points_test)
 
         self.line_data.append(test_points)
+
+        super().__init__(points, None, None, False)
 
     def plot(self, ax: axes.Axes):
         # Draw lines
@@ -284,7 +284,7 @@ class FunctionAnimation(PointAnimation):
 
     def _to_xy(self, outputs: pd.DataFrame):
         outputs = outputs.reset_index(level=1, drop=True)
-        y = to_ndarray(outputs)[:, :, 0]
+        y = dataframes.to_ndarray(outputs)[:, :, 0]
         n_epochs = y.shape[0]
         x = outputs.index.unique(level="Input").to_numpy()
         x = np.array(list(map(float, x)))

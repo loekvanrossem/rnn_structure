@@ -1,0 +1,23 @@
+model_type nonlinearity gain lr P L n_epochs hidden_layer dx2 dy2 in_dim out_dim eta_guess
+default MLP leaky_relu 1.0 0.01 50 20 3000 10 1 0.5 1 1 5
+
+gain_0.9 MLP leaky_relu 0.9 0.04 50 20 3000 10 1 0.5 1 1 5
+gain_1.1 MLP leaky_relu 1.1 0.005 50 20 3000 10 1 0.5 1 1 5
+gain_1.2 MLP leaky_relu 1.2 0.0025 50 20 3000 10 1 0.5 1 1 5
+gain_1.3 MLP leaky_relu 1.3 0.001 50 20 3000 10 1 0.5 1 1 5
+
+shallow MLP leaky_relu 0.4 0.01 50 2 3000 1 1 0.5 1 1 20
+wide MLP leaky_relu 1.0 0.01 500 20 3000 10 1 0.5 1 1 5
+narrow MLP leaky_relu 1.1 0.002 10 20 3000 10 1 0.5 1 1 5
+elu MLP elu 1.0 0.0005 50 20 3000 10 1 0.5 1 1 5
+softplus MLP softplus 1.2 0.001 50 20 3000 10 1 0.5 1 1 10
+tanh MLP tanh 1.0 0.0005 50 20 3000 10 1 0.5 1 1 500
+resnet ResNet leaky_relu 0.6 0.003 50 20 3000 10 1 0.5 1 1 5
+cnn CNN leaky_relu 10 0.015 50 20 3000 10 1 0.5 1 1 10
+early_layer MLP leaky_relu 1.0 0.01 50 20 3000 4 1 0.5 1 1 10
+late_layer MLP leaky_relu 1.0 0.01 5 20 3000 16 1 0.5 1 1 10
+dist_inputs MLP leaky_relu 1.0 0.01 50 20 3000 10 100 1 1 1 5
+high_dim MLP leaky_relu 1.1 0.01 50 20 3000 10 1 0.5 4 1 0.50
+same_outputs MLP leaky_relu 1.75 0.000003 50 20 3000 10 4 0 1 1 5000
+
+discontinuous MLP discontinuous 1.0 0.01 50 20 3000 10 1 0.5 1 1 5

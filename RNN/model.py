@@ -59,11 +59,12 @@ class Model(nn.Module):
 
         for par in self.rnn.parameters():
             nn.init.normal_(par, mean=init_std, std=init_std)
+        for par in self.fc.parameters():
+            nn.init.normal_(par, mean=init_std, std=init_std)
 
         self.to(device)
 
     def forward(self, x):
-
         batch_size = x.size(0)
 
         # Initializing hidden state for first input using method defined below

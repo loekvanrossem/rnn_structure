@@ -59,6 +59,7 @@ class MLP(nn.ModuleList):
         for mod in self.modules():
             if isinstance(mod, nn.Linear):
                 nn.init.xavier_normal_(mod.weight, gain=init_std)
+                # nn.init.normal_(mod.weight, std=init_std)
                 nn.init.zeros_(mod.bias)
 
         self.to(device)
@@ -107,7 +108,7 @@ class CNN(MLP):
     ):
         super(MLP, self).__init__()
 
-        kernel_size = 11
+        kernel_size = 5
 
         self.device = device
         self.non_linearity = non_linearity
@@ -192,7 +193,9 @@ class ResNet(MLP):
             a_copy = a.clone()
             a = layer(a)
             if n != len(self) - 1:
-                a = self.non_linearity(a) + a_copy
+                a = self.non_linearity(a)
+                if n % 2 == 0:
+                    a = a + a_copy
             activations.append(a)
 
         output = activations.pop()
