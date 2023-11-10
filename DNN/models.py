@@ -70,7 +70,8 @@ class MLP(nn.ModuleList):
         for n, layer in enumerate(self):
             a = layer(a)
             if n != len(self) - 1:
-                a = self.non_linearity(a)
+                if self.non_linearity != None:
+                    a = self.non_linearity(a)
             activations.append(a)
 
         output = activations.pop()
@@ -108,7 +109,8 @@ class CNN(MLP):
     ):
         super(MLP, self).__init__()
 
-        kernel_size = 5
+        kernel_size = 3
+        n_channels = 30
 
         self.device = device
         self.non_linearity = non_linearity
@@ -116,12 +118,39 @@ class CNN(MLP):
         self.encoding = encoding
 
         # Defining the layers
-        for n in range(n_hid_layers + 1):
+        self.append(nn.Linear(input_size, hidden_dim, bias=True))
+        self.append(
+            nn.Conv1d(
+                1,
+                n_channels,
+                kernel_size=kernel_size,
+                stride=1,
+                padding=int((kernel_size - 1) / 2),
+                bias=True,
+            )
+        )
+        for n in range(n_hid_layers - 1):
             self.append(
                 nn.Conv1d(
-                    1, 1, kernel_size, padding=int((kernel_size - 1) / 2), bias=True
+                    n_channels,
+                    n_channels,
+                    kernel_size=kernel_size,
+                    stride=1,
+                    padding=int((kernel_size - 1) / 2),
+                    bias=True,
                 )
             )
+        self.append(
+            nn.Conv1d(
+                n_channels,
+                1,
+                kernel_size=kernel_size,
+                stride=1,
+                padding=int((kernel_size - 1) / 2),
+                bias=True,
+            )
+        )
+        self.append(nn.Linear(hidden_dim, output_size, bias=True))
 
         # Initialize the parameters
         for mod in self.modules():
@@ -139,7 +168,8 @@ class CNN(MLP):
         for n, layer in enumerate(self):
             a = layer(a)
             if n != len(self) - 1:
-                a = self.non_linearity(a)
+                if self.non_linearity != None:
+                    a = self.non_linearity(a)
             activations.append(a)
 
         activations = [layer.squeeze() for layer in activations]
@@ -193,7 +223,8 @@ class ResNet(MLP):
             a_copy = a.clone()
             a = layer(a)
             if n != len(self) - 1:
-                a = self.non_linearity(a)
+                if self.non_linearity != None:
+                    a = self.non_linearity(a)
                 if n % 2 == 0:
                     a = a + a_copy
             activations.append(a)

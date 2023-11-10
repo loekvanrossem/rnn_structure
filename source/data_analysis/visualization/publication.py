@@ -225,6 +225,6 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None):
         cb.outline.set_linewidth(2)
 
     if save_path:
-        plt.savefig(save_path, dpi=200)
+        plt.savefig(save_path, dpi=200,bbox_inches='tight')
 
     plt.show()

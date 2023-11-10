@@ -25,8 +25,10 @@ class Model(nn.Module):
         The number of RNN layers
     device : device
         The device to put the model on
-    init_std : float, default 0.1
-        The standard deviation of the initial rnn weight distribution
+    nonlinearity : str
+        Nonlinearity used in recurrent layer
+    gain : float, default 0.1
+        The gain of the initial rnn weights
     output_noise : float, default 0
         Add noise to the true outputs during training
     """
@@ -39,7 +41,8 @@ class Model(nn.Module):
         hidden_dim: int,
         n_layers: int,
         device: torch.device,
-        init_std: float = 0.1,
+        nonlinearity: str = "tanh",
+        gain: float = 0.1,
         output_noise: float = 0.0,
     ):
         super(Model, self).__init__()
@@ -52,15 +55,20 @@ class Model(nn.Module):
 
         # Defining the layers
         self.rnn = nn.RNN(
-            input_size, hidden_dim, n_layers, batch_first=True, nonlinearity="tanh"
+            input_size,
+            hidden_dim,
+            n_layers,
+            batch_first=True,
+            nonlinearity=nonlinearity,
         )
         self.fc = nn.Linear(hidden_dim, output_size)
         self.ReLU = nn.LeakyReLU()
 
-        for par in self.rnn.parameters():
-            nn.init.normal_(par, mean=init_std, std=init_std)
-        for par in self.fc.parameters():
-            nn.init.normal_(par, mean=init_std, std=init_std)
+        for par in self.parameters():
+            if len(par.shape) == 2:
+                nn.init.xavier_normal_(par, gain=gain)
+            if len(par.shape) == 1:
+                nn.init.zeros_(par)
 
         self.to(device)
 
@@ -74,7 +82,7 @@ class Model(nn.Module):
         out, hidden = self.rnn(x, hidden)
         out = out[:, -1]
         out = self.fc(out)
-        out = self.ReLU(out)
+        # out = self.ReLU(out)
 
         return out, hidden
 

@@ -4,7 +4,7 @@ from typing import Callable, Optional
 
 import torch
 from torch import Tensor, nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, Dataset
 from torch.optim import Optimizer
 
 import numpy as np
@@ -86,6 +86,8 @@ class ActivationTracker(Tracker):
         The neural network from which to track activations
     track function : function(Tensor) -> Tensor
         The activations to be tracked as a function of the inputs
+    datasets : list[Dataset]
+        The datasets of which the activations to track
     initial : function() -> Tensor, default None
         If provided, also track the initial hidden activations
     """
@@ -94,42 +96,19 @@ class ActivationTracker(Tracker):
         self,
         model: nn.Module,
         track_function: Callable[[Tensor], Tensor],
+        datasets: list[Dataset],
         initial: Optional[Callable[[], Tensor]] = None,
     ) -> None:
         self.model = model
         self.track_function = track_function
+        self.datasets = datasets
         self.initial = initial
         super().__init__()
 
-    def track(self, datasets: list[TensorDataset]) -> None:
+    def track(self) -> None:
         """Store the data of this epoch. Should be called each epoch."""
-        # act_this_epoch = []
-        # for dataset in datasets:
-        #     dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
-        #     for batch in dataloader:
-        #         inputs, outputs = batch
-
-        #         # Get labels
-        #         labels = []
-        #         for input in inputs:
-        #             try:
-        #                 decoding = self.model.encoding.decode(input.cpu())
-        #                 label = "".join(str(char) for char in decoding)
-        #             except KeyError:
-        #                 label = tuple(np.squeeze(input.cpu()).numpy())
-        #             labels.append(label)
-
-        #         # Store activities
-        #         act_this_dataset = self.track_function(inputs)
-        #         act_this_dataset = (
-        #             torch.squeeze(act_this_dataset).cpu().detach().numpy()
-        #         )
-        #         act_this_dataset = pd.DataFrame(act_this_dataset, labels)
-        #         act_this_epoch.append(act_this_dataset)
-        # act_this_epoch = pd.concat(act_this_epoch, keys=list(range(len(datasets))))
-
         act_this_epoch = get_activations(
-            datasets,
+            self.datasets,
             self.track_function,
             self.model.encoding,
         )
@@ -219,6 +198,7 @@ class Compiler:
         tracked_datasets: list[TensorDataset],
         n_epochs=100,
         batch_size=32,
+        conv_thresh: float = 0,
     ):
         """
         Train the network on training datasets
@@ -230,6 +210,8 @@ class Compiler:
         n_epochs: int, default 100
         batch_size: int default 32
             batch size during training
+        conv_thresh: float, optional
+            if provided stop training when loss is below this value
         """
         # Generate trainloaders
         trainloaders = []
@@ -245,35 +227,38 @@ class Compiler:
             n_train_data += len(dataset)
 
         # Train
-        try:
-            iterator = trange(n_epochs, desc="Training", unit="steps")
-            for epoch in iterator:
-                # Store intermediate states
-                for tracker in self.trackers.values():
-                    tracker.track(tracked_datasets)
+        # try:
+        iterator = trange(n_epochs, desc="Training", unit="steps")
+        for epoch in iterator:
+            # Store intermediate states
+            for tracker in self.trackers.values():
+                tracker.track()
 
-                # Training step
-                train_loss = 0
-                for trainloader, dataset in zip(trainloaders, training_datasets):
-                    train_loss += self.model.train_step(
-                        self.optimizer, self.criterion, trainloader
-                    ) * (len(dataset) / n_train_data)
-                try:
-                    val_loss = (
-                        self.trackers["loss"]
-                        .get_entry(-1)
-                        .query("Dataset==0")
-                        .to_numpy()[0, 0]
-                    )
-                except KeyError:
-                    val_loss = np.NaN
-
-                iterator.set_postfix(
-                    train_loss="{:.5f}".format(train_loss),
-                    val_loss="{:.5f}".format(val_loss),
+            # Training step
+            train_loss = 0
+            for trainloader, dataset in zip(trainloaders, training_datasets):
+                train_loss += self.model.train_step(
+                    self.optimizer, self.criterion, trainloader
+                ) * (len(dataset) / n_train_data)
+            try:
+                val_loss = (
+                    self.trackers["loss"]
+                    .get_entry(-1)
+                    .query("Dataset==0")
+                    .to_numpy()[0, 0]
                 )
-        except Exception as e:
-            traceback.print_exc()
-            raise e
-        finally:
-            return
+            except KeyError:
+                val_loss = np.NaN
+
+            iterator.set_postfix(
+                train_loss="{:.5f}".format(train_loss),
+                val_loss="{:.5f}".format(val_loss),
+            )
+
+            if train_loss < conv_thresh:
+                return
+        # except Exception as e:
+        #     traceback.print_exc()
+        #     raise e
+        # finally:
+        #     return
