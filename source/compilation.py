@@ -231,6 +231,7 @@ class Compiler:
         iterator = trange(n_epochs, desc="Training", unit="steps")
         for epoch in iterator:
             # Store intermediate states
+            self.model.eval()
             for tracker in self.trackers.values():
                 tracker.track()
 

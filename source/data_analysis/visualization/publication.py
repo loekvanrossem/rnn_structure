@@ -1,5 +1,7 @@
 from typing import Optional
 
+import numpy as np
+
 import matplotlib
 from matplotlib import rc, rcParams, cycler
 from matplotlib import pyplot as plt
@@ -52,8 +54,11 @@ COLORS_MIXED = [
     "AF87CE",
     "6096FD",
     "EF6642",
+    "A2C579",
+    "860A35",
+    "ADE4DB",
 ]
-COLORS_CONTRAST = ["FF044F", "760AC0", "00D950", "9F82C9", "471664"]
+COLORS_CONTRAST = ["FF044F", "760AC0", "00D950", "9F82C9", "471664", "05DFD7"]
 
 
 cdict_seq = {
@@ -91,7 +96,7 @@ except ValueError:
     pass
 
 
-def pub_show(colors: str = "mixed", save_path: Optional[str] = None):
+def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=False):
     match colors.split():
         case ["mixed"]:
             color_scheme = COLORS_MIXED
@@ -162,6 +167,25 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None):
     # Scatter
     for n, points in enumerate(ax.collections):
         points.set_alpha(0.5)
+        try:
+            label = ax.get_legend_handles_labels()[1][n]
+        except IndexError:
+            continue
+        mean = np.mean(points.get_offsets().data, axis=0)
+        color = points.get_facecolor()
+        # color = color**2
+        color = color - np.min(color)
+        color[0][3] = 1
+        plt.text(
+            mean[0],
+            mean[1],
+            label,
+            color=color,
+            path_effects=[
+                pe.Stroke(linewidth=3, foreground="w"),
+                pe.Normal(),
+            ],
+        )
     if len(ax.get_lines()) > 0 and len(ax.collections) == 1:
         ax.collections[0].set_color("0.5")
 
@@ -216,6 +240,7 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None):
         )
         for spine in ax.spines.values():
             spine.set_edgecolor("black")
+
         cb = fig.colorbar(
             matplotlib.cm.ScalarMappable(cmap=COLORMAP_SEQUENTIAL),
             ax=ax,
@@ -224,7 +249,20 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None):
         )
         cb.outline.set_linewidth(2)
 
+    if no_axes:
+        ax.spines[["right", "top", "left", "bottom"]].set_visible(False)
+        plt.tick_params(
+            axis="both",
+            which="both",
+            bottom=False,
+            left=False,
+            right=False,
+            top=False,
+            labelbottom=False,
+            labelleft=False,
+        )
+
     if save_path:
-        plt.savefig(save_path, dpi=200,bbox_inches='tight')
+        plt.savefig(save_path, dpi=200, bbox_inches="tight")
 
     plt.show()

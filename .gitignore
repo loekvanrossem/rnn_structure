@@ -50148,3 +50148,137 @@ DNN/data/ImageNet/tiny-imagenet-200/train/n03447447/images/n03447447_499.JPEG
 DNN/__pycache__/models.cpython-310.pyc
 DNN/__pycache__/simulate.cpython-310.pyc
 source/utils/__pycache__/containers.cpython-310.pyc
+DNN/imagenet_classes.txt
+DNN/plots/test.html
+DNN/plots/2 points/comparisons/dh_vs_x_cnn_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_x_cnn.png
+DNN/plots/2 points/comparisons/dh_vs_x_default.png
+DNN/plots/2 points/comparisons/dh_vs_x_elu.png
+DNN/plots/2 points/comparisons/dh_vs_x_gain_0.9_no_legend10_layers.png
+DNN/plots/2 points/comparisons/dh_vs_x_gain_0.910_layers.png
+DNN/plots/2 points/comparisons/dh_vs_x_gain_1.3.png
+DNN/plots/2 points/comparisons/dh_vs_x_lazy_no_legend10_layers.png
+DNN/plots/2 points/comparisons/dh_vs_x_lazy10_layers.png
+DNN/plots/2 points/comparisons/dh_vs_x_linear_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_x_linear.png
+DNN/plots/2 points/comparisons/dh_vs_x_narrow_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_x_narrow.png
+DNN/plots/2 points/comparisons/dh_vs_x_relu_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_x_relu.png
+DNN/plots/2 points/comparisons/dh_vs_x_shallow_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_x_shallow.png
+DNN/plots/2 points/comparisons/dh_vs_x_skip.png
+DNN/plots/2 points/comparisons/dh_vs_x_tanh_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_x_tanh.png
+DNN/plots/2 points/comparisons/dh_vs_y_cnn_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_y_cnn.png
+DNN/plots/2 points/comparisons/dh_vs_y_default.png
+DNN/plots/2 points/comparisons/dh_vs_y_elu.png
+DNN/plots/2 points/comparisons/dh_vs_y_gain_0.9_no_legend10_layers.png
+DNN/plots/2 points/comparisons/dh_vs_y_gain_0.910_layers.png
+DNN/plots/2 points/comparisons/dh_vs_y_gain_1.3.png
+DNN/plots/2 points/comparisons/dh_vs_y_lazy_no_legend10_layers.png
+DNN/plots/2 points/comparisons/dh_vs_y_lazy10_layers.png
+DNN/plots/2 points/comparisons/dh_vs_y_linear_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_y_linear.png
+DNN/plots/2 points/comparisons/dh_vs_y_narrow_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_y_narrow.png
+DNN/plots/2 points/comparisons/dh_vs_y_relu_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_y_relu.png
+DNN/plots/2 points/comparisons/dh_vs_y_shallow_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_y_shallow.png
+DNN/plots/2 points/comparisons/dh_vs_y_skip_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_y_skip.png
+DNN/plots/2 points/comparisons/dh_vs_y_tanh_no_legend.png
+DNN/plots/2 points/comparisons/dh_vs_y_tanh.png
+DNN/plots/2 points/trajectories/compare_legend.png
+DNN/plots/2 points/trajectories/compare.png
+DNN/plots/2 points/trajectories/experiment_legend.png
+DNN/plots/2 points/trajectories/experiment.png
+DNN/plots/2 points/trajectories/lazy.png
+DNN/plots/2 points/trajectories/theory.png
+DNN/plots/2 points/trajectories/dh/cnn.png
+DNN/plots/2 points/trajectories/dh/default.png
+DNN/plots/2 points/trajectories/dh/discontinuous.png
+DNN/plots/2 points/trajectories/dh/dist_inputs.png
+DNN/plots/2 points/trajectories/dh/early_layer.png
+DNN/plots/2 points/trajectories/dh/elu.png
+DNN/plots/2 points/trajectories/dh/gain_0.9.png
+DNN/plots/2 points/trajectories/dh/gain_1.1.png
+DNN/plots/2 points/trajectories/dh/gain_1.2.png
+DNN/plots/2 points/trajectories/dh/gain_1.3.png
+DNN/plots/2 points/trajectories/dh/gain_1.4.png
+DNN/plots/2 points/trajectories/dh/high_dim.png
+DNN/plots/2 points/trajectories/dh/late_layer.png
+DNN/plots/2 points/trajectories/dh/linear.png
+DNN/plots/2 points/trajectories/dh/narrow.png
+DNN/plots/2 points/trajectories/dh/relu.png
+DNN/plots/2 points/trajectories/dh/same_outputs.png
+DNN/plots/2 points/trajectories/dh/shallow.png
+DNN/plots/2 points/trajectories/dh/skip.png
+DNN/plots/2 points/trajectories/dh/softplus.png
+DNN/plots/2 points/trajectories/dh/tanh.png
+DNN/plots/2 points/trajectories/dh/wide.png
+DNN/plots/2 points/trajectories/loss/cnn.png
+DNN/plots/2 points/trajectories/loss/default.png
+DNN/plots/2 points/trajectories/loss/discontinuous.png
+DNN/plots/2 points/trajectories/loss/dist_inputs.png
+DNN/plots/2 points/trajectories/loss/early_layer.png
+DNN/plots/2 points/trajectories/loss/elu.png
+DNN/plots/2 points/trajectories/loss/gain_0.9.png
+DNN/plots/2 points/trajectories/loss/gain_1.1.png
+DNN/plots/2 points/trajectories/loss/gain_1.2.png
+DNN/plots/2 points/trajectories/loss/gain_1.3.png
+DNN/plots/2 points/trajectories/loss/gain_1.4.png
+DNN/plots/2 points/trajectories/loss/high_dim.png
+DNN/plots/2 points/trajectories/loss/late_layer.png
+DNN/plots/2 points/trajectories/loss/linear.png
+DNN/plots/2 points/trajectories/loss/narrow.png
+DNN/plots/2 points/trajectories/loss/relu.png
+DNN/plots/2 points/trajectories/loss/same_outputs.png
+DNN/plots/2 points/trajectories/loss/shallow.png
+DNN/plots/2 points/trajectories/loss/skip.png
+DNN/plots/2 points/trajectories/loss/softplus.png
+DNN/plots/2 points/trajectories/loss/tanh.png
+DNN/plots/2 points/trajectories/loss/wide.png
+DNN/plots/2 points/trajectories/ode/cnn.png
+DNN/plots/2 points/trajectories/ode/default.png
+DNN/plots/2 points/trajectories/ode/discontinuous.png
+DNN/plots/2 points/trajectories/ode/dist_inputs.png
+DNN/plots/2 points/trajectories/ode/early_layer.png
+DNN/plots/2 points/trajectories/ode/elu.png
+DNN/plots/2 points/trajectories/ode/gain_0.9.png
+DNN/plots/2 points/trajectories/ode/gain_1.1.png
+DNN/plots/2 points/trajectories/ode/gain_1.2.png
+DNN/plots/2 points/trajectories/ode/gain_1.3.png
+DNN/plots/2 points/trajectories/ode/gain_1.4.png
+DNN/plots/2 points/trajectories/ode/high_dim.png
+DNN/plots/2 points/trajectories/ode/late_layer.png
+DNN/plots/2 points/trajectories/ode/linear.png
+DNN/plots/2 points/trajectories/ode/narrow.png
+DNN/plots/2 points/trajectories/ode/relu.png
+DNN/plots/2 points/trajectories/ode/same_outputs.png
+DNN/plots/2 points/trajectories/ode/shallow.png
+DNN/plots/2 points/trajectories/ode/skip.png
+DNN/plots/2 points/trajectories/ode/softplus.png
+DNN/plots/2 points/trajectories/ode/tanh.png
+DNN/plots/2 points/trajectories/ode/wide.png
+DNN/plots/imagenet_fish/increase_vs_D0.png
+DNN/plots/imagenet_fish/kernel_change_#2.png
+DNN/plots/imagenet_fish/kernel_change_#3.png
+DNN/plots/imagenet_fish/kernel_change.png
+DNN/plots/mnist/high_init.png
+DNN/plots/mnist/low_init #2.png
+DNN/plots/mnist/low_init_with_clustering.png
+DNN/plots/mnist/low_init.png
+DNN/plots/mnist/trajectory/ode/low_init_class.png
+DNN/plots/mnist/trajectory/ode/low_init.png
+DNN/plots/semantic/gain0.1.png
+DNN/plots/semantic/gain2.png
+DNN/plots/sinus_grid/compl0.1gain1.gif
+DNN/plots/sinus_grid/compl0.5gain1.gif
+DNN/plots/sinus_grid/compl1gain1.gif
+DNN/plots/sinus_grid/compl2gain1.gif
+DNN/plots/sinus_grid/val_loss_default.png
+DNN/plots/sinus_grid/val_loss.png
+DNN/__pycache__/two_points.cpython-310.pyc

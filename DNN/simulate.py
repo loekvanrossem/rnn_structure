@@ -44,9 +44,11 @@ def rep_sim(h0, y0, w0, dx2, dy2):
     return z[0]
 
 
-def optimize_eta(h2, y2, w, dx2, dy2, guesses=np.logspace(-6, 1, 100)):
+def optimize_eta(h2, y2, w, dx2, dy2, guesses=np.logspace(-6, 2, 200)):
     h0, y0, w0 = h2[0], y2[0], w[0]
     n_epochs = len(h2)
+
+    ratio = h2[-1] ** 2 / (dx2 * dy2)
 
     def model_accuracy(pars):
         eta_h, eta_y = pars
@@ -59,9 +61,9 @@ def optimize_eta(h2, y2, w, dx2, dy2, guesses=np.logspace(-6, 1, 100)):
             [h0, y0, w0],
             args=(eta_h, eta_y, dx2, dy2),
             dense_output=True,
-            rtol=1e-2,
-            atol=1e-5,
-            method="RK23",
+            # rtol=1e-2,
+            # atol=1e-5,
+            method="Radau",
         )
 
         t = np.linspace(0, t_max, n_epochs)
@@ -76,9 +78,11 @@ def optimize_eta(h2, y2, w, dx2, dy2, guesses=np.logspace(-6, 1, 100)):
 
     # Optimize etas
     # guesses = np.logspace(-6, 1, 100)
-    guess = guesses[np.argmin([model_accuracy((guess, guess)) for guess in guesses])]
+    guess = guesses[
+        np.argmin([model_accuracy(guess * np.array([ratio, 1])) for guess in guesses])
+    ]
 
-    optimal = scipy.optimize.minimize(model_accuracy, guess * np.array([1, 1]))
+    optimal = scipy.optimize.minimize(model_accuracy, guess * np.array([ratio, 1]))
     print(f"Loss: {optimal.fun}")
 
     eta_h_opt, eta_y_opt = optimal.x

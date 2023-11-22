@@ -168,11 +168,13 @@ class CNN(MLP):
         for n, layer in enumerate(self):
             a = layer(a)
             if n != len(self) - 1:
-                if self.non_linearity != None:
+                if self.non_linearity is not None:
                     a = self.non_linearity(a)
             activations.append(a)
 
-        activations = [layer.squeeze() for layer in activations]
+        activations = [
+            layer.squeeze().reshape((x.shape[0], -1)) for layer in activations
+        ]
 
         output = activations.pop()
 
@@ -223,10 +225,63 @@ class ResNet(MLP):
             a_copy = a.clone()
             a = layer(a)
             if n != len(self) - 1:
-                if self.non_linearity != None:
+                if self.non_linearity is not None:
                     a = self.non_linearity(a)
                 if n % 2 == 0:
                     a = a + a_copy
+            activations.append(a)
+
+        output = activations.pop()
+
+        return output, activations
+
+
+class Dropout(MLP):
+    def __init__(
+        self,
+        encoding: Encoding,
+        input_size: int,
+        output_size: int,
+        hidden_dim: int,
+        n_hid_layers: int,
+        device: torch.device,
+        init_std: float = 1,
+        non_linearity=torch.nn.functional.leaky_relu,
+    ):
+        super(MLP, self).__init__()
+
+        self.device = device
+        self.non_linearity = non_linearity
+
+        self.encoding = encoding
+
+        # Defining the layers
+        for n in range(n_hid_layers + 1):
+            dim_in, dim_out = hidden_dim, hidden_dim
+            if n == 0:
+                dim_in = input_size
+            if n == n_hid_layers:
+                dim_out = output_size
+
+            self.append(nn.Dropout(p=0.1))
+            self.append(nn.Linear(dim_in, dim_out, bias=True))
+
+        # Initialize the parameters
+        for mod in self.modules():
+            if isinstance(mod, nn.Linear):
+                nn.init.xavier_normal_(mod.weight, gain=init_std)
+                nn.init.zeros_(mod.bias)
+
+        self.to(device)
+
+    def forward(self, x):
+        a = x
+        activations = []
+        for n, layer in enumerate(self):
+            a = layer(a)
+            if n != len(self) - 1:
+                if isinstance(layer, nn.Linear) and self.non_linearity is not None:
+                    a = self.non_linearity(a)
             activations.append(a)
 
         output = activations.pop()
