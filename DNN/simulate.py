@@ -70,9 +70,9 @@ def optimize_eta(h2, y2, w, dx2, dy2, guesses=np.logspace(-6, 2, 200)):
         z = sol.sol(t)
 
         loss = (
-            np.sum((h2 - z[0]) ** 2)
-            + np.sum((y2 - z[1]) ** 2)
-            + np.sum((w - z[2]) ** 2)
+            np.sum((h2 - z[0]) ** 2) / np.sum(h2**2)
+            + np.sum((y2 - z[1]) ** 2) / np.sum(y2**2)
+            + np.sum((w - z[2]) ** 2) / np.sum(w**2)
         )
         return loss
 

@@ -44,10 +44,10 @@ class PointAnimation(animation.AnimationSubPlot):
         self.points = points
         self.labels = labels
         self.plot_trails = plot_trails
-        if colors:
-            self.colors = colors
-        else:
+        if colors is None:
             self.colors = [0] * points.shape[1]
+        else:
+            self.colors = colors
 
     def plot(self, ax: axes.Axes):
         self.ax = ax
@@ -152,6 +152,7 @@ class ActivationsAnimation(PointAnimation):
         activations: pd.DataFrame,
         transform: str,
         fixed_points: Optional[dict] = None,
+        colors: Optional[list[int]] = None,
         plot_labels: bool = True,
         plot_trails: bool = True,
     ):
@@ -205,7 +206,8 @@ class ActivationsAnimation(PointAnimation):
             labels = dataframes.to_labels(data_red)[0]
         else:
             labels = None
-        colors = [int(c) for c in datasets]
+        if colors is None:
+            colors = [int(c) for c in datasets]
 
         super().__init__(points, labels, colors, plot_trails)
 
