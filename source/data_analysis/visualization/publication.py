@@ -7,109 +7,155 @@ from matplotlib import rc, rcParams, cycler
 from matplotlib import pyplot as plt
 import matplotlib.patheffects as pe
 from matplotlib.axis import Axis
+from matplotlib.colors import LinearSegmentedColormap
 
 # COLORS_GRADIENT = [
-#     "f92485",
-#     "b4189f",
-#     "7409b9",
-#     "540dab",
-#     "480da7",
-#     "3d0ba2",
-#     "3f37ca",
-#     "4461ed",
-#     "4a93f1",
-#     "4bc9f1",
+#     [
+#         "4bc9f1",
+#         "4a93f1",
+#         "4461ed",
+#         "3f37ca",
+#         "3d0ba2",
+#         "480da7",
+#         "540dab",
+#         "7409b9",
+#         "b4189f",
+#         "f92485",
+#     ],
+#     [
+#         "2a4858",
+#         "215d6e",
+#         "08737f",
+#         "00898a",
+#         "089f8f",
+#         "39b48e",
+#         "64c987",
+#         "92dc7e",
+#         "c4ec74",
+#         "fafa6e",
+#     ],
 # ]
-COLORS_GRADIENT = [
-    [
-        "4bc9f1",
-        "4a93f1",
-        "4461ed",
-        "3f37ca",
-        "3d0ba2",
-        "480da7",
-        "540dab",
-        "7409b9",
-        "b4189f",
-        "f92485",
-    ],
-    [
-        "2a4858",
-        "215d6e",
-        "08737f",
-        "00898a",
-        "089f8f",
-        "39b48e",
-        "64c987",
-        "92dc7e",
-        "c4ec74",
-        "fafa6e",
-    ],
-]
 COLORS_MIXED = [
-    "138086",
-    "DC8665",
-    "534686",
-    "FEB462",
-    "AF87CE",
-    "6096FD",
-    "EF6642",
-    "A2C579",
-    "860A35",
-    "ADE4DB",
+    [
+        "138086",
+        "DC8665",
+        "534686",
+        "FEB462",
+        "AF87CE",
+        "6096FD",
+        "EF6642",
+        "A2C579",
+        "860A35",
+        "ADE4DB",
+    ],
+    ["FF044F", "760AC0", "00D950", "9F82C9", "471664", "05DFD7"],
 ]
-COLORS_CONTRAST = ["FF044F", "760AC0", "00D950", "9F82C9", "471664", "05DFD7"]
+
+cdict_seq = [
+    {
+        "red": (
+            (0.0, 64 / 255, 64 / 255),
+            (0.2, 112 / 255, 112 / 255),
+            (0.4, 230 / 255, 230 / 255),
+            (0.6, 253 / 255, 253 / 255),
+            (0.8, 244 / 255, 244 / 255),
+            (1.0, 169 / 255, 169 / 255),
+        ),
+        "green": (
+            (0.0, 57 / 255, 57 / 255),
+            (0.2, 198 / 255, 198 / 255),
+            (0.4, 241 / 255, 241 / 255),
+            (0.6, 219 / 255, 219 / 255),
+            (0.8, 109 / 255, 109 / 255),
+            (1.0, 23 / 255, 23 / 255),
+        ),
+        "blue": (
+            (0.0, 144 / 255, 144 / 255),
+            (0.2, 162 / 255, 162 / 255),
+            (0.4, 146 / 255, 146 / 255),
+            (0.6, 127 / 255, 127 / 255),
+            (0.8, 69 / 255, 69 / 255),
+            (1.0, 69 / 255, 69 / 255),
+        ),
+    },
+    {
+        "red": (
+            (0.0, 75 / 255, 75 / 255),
+            (0.33, 63 / 255, 63 / 255),
+            (0.67, 84 / 255, 84 / 255),
+            (1.0, 249 / 255, 249 / 255),
+        ),
+        "green": (
+            (0.0, 201 / 255, 201 / 255),
+            (0.33, 55 / 255, 55 / 255),
+            (0.67, 13 / 255, 13 / 255),
+            (1.0, 36 / 255, 36 / 255),
+        ),
+        "blue": (
+            (0.0, 241 / 255, 241 / 255),
+            (0.33, 202 / 255, 202 / 255),
+            (0.67, 171 / 255, 171 / 255),
+            (1.0, 133 / 255, 133 / 255),
+        ),
+    },
+    {
+        "red": (
+            (0.0, 42 / 255, 42 / 255),
+            (0.33, 0 / 255, 0 / 255),
+            (0.67, 100 / 255, 100 / 255),
+            (1.0, 250 / 255, 250 / 255),
+        ),
+        "green": (
+            (0.0, 72 / 255, 72 / 255),
+            (0.33, 137 / 255, 137 / 255),
+            (0.67, 201 / 255, 201 / 255),
+            (1.0, 250 / 255, 250 / 255),
+        ),
+        "blue": (
+            (0.0, 88 / 255, 88 / 255),
+            (0.33, 138 / 255, 138 / 255),
+            (0.67, 135 / 255, 135 / 255),
+            (1.0, 110 / 255, 110 / 255),
+        ),
+    },
+]
+
+# COLORMAP_SEQUENTIAL = matplotlib.colors.LinearSegmentedColormap(
+#     "COLORMAP_SEQUENTIAL", segmentdata=cdict_seq
+# )
+# try:
+#     matplotlib.colormaps.register(COLORMAP_SEQUENTIAL)
+# except ValueError:
+#     pass
 
 
-cdict_seq = {
-    "red": (
-        (0.0, 64 / 255, 64 / 255),
-        (0.2, 112 / 255, 112 / 255),
-        (0.4, 230 / 255, 230 / 255),
-        (0.6, 253 / 255, 253 / 255),
-        (0.8, 244 / 255, 244 / 255),
-        (1.0, 169 / 255, 169 / 255),
-    ),
-    "green": (
-        (0.0, 57 / 255, 57 / 255),
-        (0.2, 198 / 255, 198 / 255),
-        (0.4, 241 / 255, 241 / 255),
-        (0.6, 219 / 255, 219 / 255),
-        (0.8, 109 / 255, 109 / 255),
-        (1.0, 23 / 255, 23 / 255),
-    ),
-    "blue": (
-        (0.0, 144 / 255, 144 / 255),
-        (0.2, 162 / 255, 162 / 255),
-        (0.4, 146 / 255, 146 / 255),
-        (0.6, 127 / 255, 127 / 255),
-        (0.8, 69 / 255, 69 / 255),
-        (1.0, 69 / 255, 69 / 255),
-    ),
-}
-COLORMAP_SEQUENTIAL = matplotlib.colors.LinearSegmentedColormap(
-    "COLORMAP_SEQUENTIAL", segmentdata=cdict_seq
-)
-try:
-    matplotlib.colormaps.register(COLORMAP_SEQUENTIAL)
-except ValueError:
-    pass
+def set_color_mixed(index=0):
+    rcParams["axes.prop_cycle"] = cycler(color=COLORS_MIXED[index])
+
+
+def set_color_gradient(N, index=0):
+    cmap = matplotlib.colors.LinearSegmentedColormap(
+        "COLORMAP_SEQUENTIAL", segmentdata=cdict_seq[index], N=N
+    )
+    color_scheme = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+    rcParams["axes.prop_cycle"] = cycler(color=color_scheme)
 
 
 def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=False):
-    match colors.split():
-        case ["mixed"]:
-            color_scheme = COLORS_MIXED
-        case ["gradient"]:
-            color_scheme = COLORS_GRADIENT[0]
-        case ["gradient", n]:
-            color_scheme = COLORS_GRADIENT[int(n) - 1]
-        case ["contrast"]:
-            color_scheme = COLORS_CONTRAST
-    rcParams["axes.prop_cycle"] = cycler(color=color_scheme)
+    fig = plt.gcf()
+    ax = plt.gca()
 
-    # rc("font", **{"sans-serif": "Go Medium"})
-    # rc("font", **{"sans-serif": "Noto Sans Math"})
+    # match colors.split():
+    #     case ["mixed"]:
+    #         color_scheme = COLORS_MIXED
+    #     case ["gradient"]:
+    #         color_scheme = COLORS_GRADIENT[0]
+    #     case ["gradient", n]:
+    #         color_scheme = COLORS_GRADIENT[int(n) - 1]
+    #     case ["contrast"]:
+    #         color_scheme = COLORS_CONTRAST
+    # rcParams["axes.prop_cycle"] = cycler(color=color_scheme)
+
     rcParams.update({"text.usetex": True, "font.family": "Helvetica"})
 
     SMALL_SIZE = 13
@@ -118,16 +164,11 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=Fal
 
     plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
     plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
-    plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+    plt.rc("axes", labelsize=SMALL_SIZE)  # fontsize of the x and y labels
     plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
     plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
     plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
-
-    fig = plt.gcf()
-    ax = plt.gca()
-
-    # rcParams["figure.dpi"] = 200
 
     # Lines
     for line in ax.get_lines():
@@ -224,30 +265,30 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=Fal
             Axis.set_path_effects(line, path_effects)
 
     # Images
-    rc("image", cmap="COLORMAP_SEQUENTIAL")
-    if len(ax.get_images()) == 1:
-        ax.grid(False)
-        ax.spines[["right", "top"]].set_visible(True)
-        plt.tick_params(
-            axis="both",
-            which="both",
-            bottom=False,
-            left=False,
-            right=False,
-            top=False,
-            labelbottom=False,
-            labelleft=False,
-        )
-        for spine in ax.spines.values():
-            spine.set_edgecolor("black")
+    # rc("image", cmap="COLORMAP_SEQUENTIAL")
+    # if len(ax.get_images()) == 1:
+    #     ax.grid(False)
+    #     ax.spines[["right", "top"]].set_visible(True)
+    #     plt.tick_params(
+    #         axis="both",
+    #         which="both",
+    #         bottom=False,
+    #         left=False,
+    #         right=False,
+    #         top=False,
+    #         labelbottom=False,
+    #         labelleft=False,
+    #     )
+    #     for spine in ax.spines.values():
+    #         spine.set_edgecolor("black")
 
-        cb = fig.colorbar(
-            matplotlib.cm.ScalarMappable(cmap=COLORMAP_SEQUENTIAL),
-            ax=ax,
-            shrink=0.8,
-            aspect=15,
-        )
-        cb.outline.set_linewidth(2)
+    #     cb = fig.colorbar(
+    #         matplotlib.cm.ScalarMappable(cmap=COLORMAP_SEQUENTIAL),
+    #         ax=ax,
+    #         shrink=0.8,
+    #         aspect=15,
+    #     )
+    #     cb.outline.set_linewidth(2)
 
     if no_axes:
         ax.spines[["right", "top", "left", "bottom"]].set_visible(False)
