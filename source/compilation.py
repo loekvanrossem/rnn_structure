@@ -176,22 +176,6 @@ class Compiler:
         loss.index = loss.index.set_names(["Dataset"])
         return loss
 
-    # def grid_values(self, grid_dataset):
-    #     gridloader = DataLoader(
-    #         grid_dataset, batch_size=len(grid_dataset), shuffle=False
-    #     )
-    #     for batch in gridloader:
-    #         grid_points, _ = batch
-    #         grid_points = torch.swapaxes(grid_points, 0, 1)
-    #         hidden_values = {}
-    #         for symbol in self.model.encoding.symbols:
-    #             input = self.model.encoding([[symbol]] * grid_points.shape[1])
-    #             input = torch.from_numpy(input.astype(np.float32)).to(self.model.device)
-    #             hidden_values[symbol], _ = self.model.rnn(input, grid_points)
-    #         output_values = self.model.fc(grid_points)
-
-    #     return hidden_values, output_values
-
     def training_run(
         self,
         training_datasets: list[TensorDataset],

@@ -206,11 +206,10 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=Fal
         ax.tick_params(axis=axis, colors=border_color, width=3, length=4)
 
     # Scatter
-    for n, points in enumerate(ax.collections):
+    for points in ax.collections:
         points.set_alpha(0.5)
-        try:
-            label = ax.get_legend_handles_labels()[1][n]
-        except IndexError:
+        label = points.get_label()
+        if label[0] == "_":
             continue
         mean = np.mean(points.get_offsets().data, axis=0)
         color = points.get_facecolor()

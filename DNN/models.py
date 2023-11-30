@@ -227,7 +227,7 @@ class ResNet(MLP):
             if n != len(self) - 1:
                 if self.non_linearity is not None:
                     a = self.non_linearity(a)
-                if n % 2 == 0:
+                if n % 2 == 1:
                     a = a + a_copy
             activations.append(a)
 
