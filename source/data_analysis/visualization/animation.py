@@ -82,9 +82,9 @@ class SliderAnimation:
 
     def _get_frame(self, parameter) -> Image.Image:
         fig = self._fig
-        try:
+        if parameter in self._buffer.keys():
             return self._buffer[parameter]
-        except KeyError:
+        else:
             for plot in self.plots.values():
                 plot.update(parameter)
             fig.canvas.draw()

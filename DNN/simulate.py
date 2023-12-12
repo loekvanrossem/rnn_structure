@@ -83,11 +83,12 @@ def optimize_eta(h2, y2, w, dx2, dy2, guesses=np.logspace(-6, 2, 200)):
     ]
 
     optimal = scipy.optimize.minimize(model_accuracy, guess * np.array([ratio, 1]))
-    print(f"Loss: {optimal.fun}")
-
+    loss = optimal.fun
     eta_h_opt, eta_y_opt = optimal.x
 
-    return eta_h_opt, eta_y_opt
+    print(f"Loss: {loss}")
+
+    return (eta_h_opt, eta_y_opt, loss)
 
 
 def optimize_eta_y_mean(z, train_loss, dy2, y0_mean):

@@ -98,9 +98,9 @@ class AutomatonHistory:
 
     def __getitem__(self, epoch: int) -> Automaton:
         """Get the automaton at a certain epoch."""
-        try:
+        if epoch in self._automata.keys():
             automaton = self._automata[epoch]
-        except KeyError:
+        else:
             states = self.states[epoch]
             initial_state = self.initial_states[epoch]
             transitions = {
@@ -256,9 +256,9 @@ def to_automaton_history(
         for state in states_this_epoch:
             input_string = state.name.split(", ")[0]
             if input_string == "initial":
-                try:
+                if len(state.name.split(", ")) > 1:
                     input_string = state.name.split(", ")[1]
-                except IndexError:
+                else:
                     outputs[epoch, state] = None
                     continue
             output = output_this_epoch.loc[input_string].to_numpy()

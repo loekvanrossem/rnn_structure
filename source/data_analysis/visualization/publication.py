@@ -9,32 +9,7 @@ import matplotlib.patheffects as pe
 from matplotlib.axis import Axis
 from matplotlib.colors import LinearSegmentedColormap
 
-# COLORS_GRADIENT = [
-#     [
-#         "4bc9f1",
-#         "4a93f1",
-#         "4461ed",
-#         "3f37ca",
-#         "3d0ba2",
-#         "480da7",
-#         "540dab",
-#         "7409b9",
-#         "b4189f",
-#         "f92485",
-#     ],
-#     [
-#         "2a4858",
-#         "215d6e",
-#         "08737f",
-#         "00898a",
-#         "089f8f",
-#         "39b48e",
-#         "64c987",
-#         "92dc7e",
-#         "c4ec74",
-#         "fafa6e",
-#     ],
-# ]
+
 COLORS_MIXED = [
     [
         "138086",
@@ -120,41 +95,32 @@ cdict_seq = [
     },
 ]
 
-# COLORMAP_SEQUENTIAL = matplotlib.colors.LinearSegmentedColormap(
-#     "COLORMAP_SEQUENTIAL", segmentdata=cdict_seq
-# )
-# try:
-#     matplotlib.colormaps.register(COLORMAP_SEQUENTIAL)
-# except ValueError:
-#     pass
+for n, cdict in enumerate(cdict_seq):
+    try:
+        matplotlib.colormaps.register(
+            LinearSegmentedColormap(f"Colormap_seq_{n}", cdict)
+        )
+    except ValueError:
+        pass
 
 
 def set_color_mixed(index=0):
     rcParams["axes.prop_cycle"] = cycler(color=COLORS_MIXED[index])
 
 
-def set_color_gradient(N, index=0):
+def set_color_gradient(index=0, N=10):
     cmap = matplotlib.colors.LinearSegmentedColormap(
         "COLORMAP_SEQUENTIAL", segmentdata=cdict_seq[index], N=N
     )
     color_scheme = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
     rcParams["axes.prop_cycle"] = cycler(color=color_scheme)
 
+    plt.rcParams["image.cmap"] = f"Colormap_seq_{index}"
 
-def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=False):
+
+def pub_show(save_path: Optional[str] = None, border_color="0.25"):
     fig = plt.gcf()
     ax = plt.gca()
-
-    # match colors.split():
-    #     case ["mixed"]:
-    #         color_scheme = COLORS_MIXED
-    #     case ["gradient"]:
-    #         color_scheme = COLORS_GRADIENT[0]
-    #     case ["gradient", n]:
-    #         color_scheme = COLORS_GRADIENT[int(n) - 1]
-    #     case ["contrast"]:
-    #         color_scheme = COLORS_CONTRAST
-    # rcParams["axes.prop_cycle"] = cycler(color=color_scheme)
 
     rcParams.update({"text.usetex": True, "font.family": "Helvetica"})
 
@@ -169,6 +135,22 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=Fal
     plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
     plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+    ax.spines[:].set_capstyle("round")
+    ax.spines[:].set_linewidth(3)
+    ax.spines[:].set_color(border_color)
+    for axis in ("x", "y"):
+        ax.tick_params(axis=axis, colors=border_color, width=3, length=4)
+
+    if save_path:
+        plt.savefig(save_path, dpi=200, bbox_inches="tight")
+
+    plt.show()
+
+
+def plt_show(no_axes=False, **kwargs):
+    fig = plt.gcf()
+    ax = plt.gca()
 
     # Lines
     for line in ax.get_lines():
@@ -197,13 +179,7 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=Fal
     n_ticks = 3 + int(fig.get_figheight() * 0.5)
     plt.locator_params(nbins=n_ticks - 1, min_n_ticks=n_ticks)
     ax.grid("on", alpha=0.4, linestyle="--")
-    border_color = "0.25"
     ax.spines[["right", "top"]].set_visible(False)
-    ax.spines[:].set_capstyle("round")
-    ax.spines[:].set_linewidth(3)
-    ax.spines[:].set_color(border_color)
-    for axis in ("x", "y"):
-        ax.tick_params(axis=axis, colors=border_color, width=3, length=4)
 
     # Scatter
     for points in ax.collections:
@@ -263,32 +239,6 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=Fal
         for line in ax.get_lines():
             Axis.set_path_effects(line, path_effects)
 
-    # Images
-    # rc("image", cmap="COLORMAP_SEQUENTIAL")
-    # if len(ax.get_images()) == 1:
-    #     ax.grid(False)
-    #     ax.spines[["right", "top"]].set_visible(True)
-    #     plt.tick_params(
-    #         axis="both",
-    #         which="both",
-    #         bottom=False,
-    #         left=False,
-    #         right=False,
-    #         top=False,
-    #         labelbottom=False,
-    #         labelleft=False,
-    #     )
-    #     for spine in ax.spines.values():
-    #         spine.set_edgecolor("black")
-
-    #     cb = fig.colorbar(
-    #         matplotlib.cm.ScalarMappable(cmap=COLORMAP_SEQUENTIAL),
-    #         ax=ax,
-    #         shrink=0.8,
-    #         aspect=15,
-    #     )
-    #     cb.outline.set_linewidth(2)
-
     if no_axes:
         ax.spines[["right", "top", "left", "bottom"]].set_visible(False)
         plt.tick_params(
@@ -301,8 +251,43 @@ def pub_show(colors: str = "mixed", save_path: Optional[str] = None, no_axes=Fal
             labelbottom=False,
             labelleft=False,
         )
+    pub_show(border_color="0.25", **kwargs)
 
-    if save_path:
-        plt.savefig(save_path, dpi=200, bbox_inches="tight")
 
-    plt.show()
+def im_show(x_labels: Optional[list] = None, y_labels: Optional[list] = None, **kwargs):
+    fig = plt.gcf()
+    ax = plt.gca()
+
+    ax.spines[["right", "top"]].set_visible(True)
+
+    for spine in ax.spines.values():
+        spine.set_edgecolor("black")
+
+    lims = ax.get_images()[0].get_clim()
+
+    cb = plt.colorbar(ax=ax, shrink=0.8, aspect=15)
+    cb.outline.set_linewidth(2.5)
+
+    if x_labels:
+        ax.set_xticks(np.arange(len(x_labels)), labels=x_labels)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    else:
+        plt.tick_params(
+            axis="x",
+            which="both",
+            bottom=False,
+            top=False,
+            labelbottom=False,
+        )
+    if y_labels:
+        ax.set_yticks(np.arange(len(y_labels)), labels=y_labels)
+    else:
+        plt.tick_params(
+            axis="y",
+            which="both",
+            left=False,
+            right=False,
+            labelleft=False,
+        )
+
+    pub_show(border_color="0.1", **kwargs)
