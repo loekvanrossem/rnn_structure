@@ -6,6 +6,8 @@ dependencies:
   - ipykernel
   - ipywidgets
 
+  - tqdm
+
   - numpy
   - scipy
   - pandas>=2.0.0
