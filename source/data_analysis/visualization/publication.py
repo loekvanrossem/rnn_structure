@@ -144,6 +144,7 @@ def pub_show(save_path: Optional[str] = None, border_color="0.25"):
 
     if save_path:
         plt.savefig(save_path, dpi=200, bbox_inches="tight")
+        plt.savefig(save_path + ".eps", bbox_inches="tight", format="eps")
 
     plt.show()
 
