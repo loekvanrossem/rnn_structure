@@ -255,7 +255,18 @@ def plt_show(no_axes=False, **kwargs):
     pub_show(border_color="0.25", **kwargs)
 
 
-def im_show(x_labels: Optional[list] = None, y_labels: Optional[list] = None, **kwargs):
+def _remove_none_labels(labeling):
+    locations = [loc for loc in np.arange(len(labeling)) if labeling[loc] is not None]
+    labels = [label for label in labeling if label is not None]
+    return locations, labels
+
+
+def im_show(
+    x_labels: Optional[list] = None,
+    y_labels: Optional[list] = None,
+    colorbar=True,
+    **kwargs,
+):
     fig = plt.gcf()
     ax = plt.gca()
 
@@ -266,11 +277,13 @@ def im_show(x_labels: Optional[list] = None, y_labels: Optional[list] = None, **
 
     lims = ax.get_images()[0].get_clim()
 
-    cb = plt.colorbar(ax=ax, shrink=0.8, aspect=15)
-    cb.outline.set_linewidth(2.5)
+    if colorbar:
+        cb = plt.colorbar(ax=ax, shrink=0.8, aspect=15)
+        cb.outline.set_linewidth(2.5)
 
-    if x_labels:
-        ax.set_xticks(np.arange(len(x_labels)), labels=x_labels)
+    if x_labels is not None:
+        locations, labels = _remove_none_labels(x_labels)
+        ax.set_xticks(locations, labels=labels)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
     else:
         plt.tick_params(
@@ -280,8 +293,9 @@ def im_show(x_labels: Optional[list] = None, y_labels: Optional[list] = None, **
             top=False,
             labelbottom=False,
         )
-    if y_labels:
-        ax.set_yticks(np.arange(len(y_labels)), labels=y_labels)
+    if y_labels is not None:
+        locations, labels = _remove_none_labels(y_labels)
+        ax.set_yticks(locations, labels=labels)
     else:
         plt.tick_params(
             axis="y",
