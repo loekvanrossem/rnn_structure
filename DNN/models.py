@@ -109,8 +109,8 @@ class CNN(MLP):
     ):
         super(MLP, self).__init__()
 
-        kernel_size = 3
-        n_channels = 30
+        kernel_size = 11
+        n_channels = 2
 
         self.device = device
         self.non_linearity = non_linearity
@@ -155,7 +155,8 @@ class CNN(MLP):
         # Initialize the parameters
         for mod in self.modules():
             if isinstance(mod, nn.Conv1d):
-                nn.init.xavier_normal_(mod.weight, gain=init_std)
+                # nn.init.xavier_normal_(mod.weight, gain=init_std)
+                nn.init.kaiming_normal_(mod.weight, nonlinearity="leaky_relu")
                 nn.init.zeros_(mod.bias)
 
         self.to(device)
@@ -222,13 +223,12 @@ class ResNet(MLP):
         a = x
         activations = []
         for n, layer in enumerate(self):
-            a_copy = a.clone()
             a = layer(a)
             if n != len(self) - 1:
                 if self.non_linearity is not None:
                     a = self.non_linearity(a)
-                if n % 2 == 1:
-                    a = a + a_copy
+            if 1 < n < len(self) - 1:
+                a = a + activations[-2]
             activations.append(a)
 
         output = activations.pop()

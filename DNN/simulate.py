@@ -77,7 +77,6 @@ def optimize_eta(h2, y2, w, dx2, dy2, guesses=np.logspace(-6, 2, 200)):
         return loss
 
     # Optimize etas
-    # guesses = np.logspace(-6, 1, 100)
     guess = guesses[
         np.argmin([model_accuracy(guess * np.array([ratio, 1])) for guess in guesses])
     ]
