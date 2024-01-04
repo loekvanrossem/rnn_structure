@@ -118,7 +118,7 @@ def set_color_gradient(index=0, N=10):
     plt.rcParams["image.cmap"] = f"Colormap_seq_{index}"
 
 
-def pub_show(save_path: Optional[str] = None, border_color="0.25"):
+def pub_show(save_path: Optional[str] = None, border_color="0.25", **kwargs):
     fig = plt.gcf()
     ax = plt.gca()
 
@@ -143,8 +143,8 @@ def pub_show(save_path: Optional[str] = None, border_color="0.25"):
         ax.tick_params(axis=axis, colors=border_color, width=3, length=4)
 
     if save_path:
-        plt.savefig(save_path, dpi=200, bbox_inches="tight")
-        plt.savefig(save_path + ".eps", bbox_inches="tight", format="eps")
+        plt.savefig(save_path, dpi=200, **kwargs)
+        plt.savefig(save_path + ".eps", format="eps", **kwargs)
 
     plt.show()
 
@@ -177,7 +177,7 @@ def plt_show(no_axes=False, **kwargs):
         legend.get_frame().set_linewidth(2)
 
     # Axes
-    n_ticks = 3 + int(fig.get_figheight() * 0.5)
+    n_ticks = 2 + int(fig.get_figheight() * 0.5)
     plt.locator_params(nbins=n_ticks - 1, min_n_ticks=n_ticks)
     ax.grid("on", alpha=0.4, linestyle="--")
     ax.spines[["right", "top"]].set_visible(False)
@@ -253,6 +253,18 @@ def plt_show(no_axes=False, **kwargs):
             labelleft=False,
         )
     pub_show(border_color="0.25", **kwargs)
+
+
+def plt_legend(legend, save_path, expand=[-5, -15, 10, 5]):
+    fig = legend.figure
+    fig.canvas.draw()
+    bbox = legend.get_window_extent()
+    bbox = bbox.from_extents(*(bbox.extents + np.array(expand)))
+    bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
+    ax = plt.gca()
+    ax.set_axis_off()
+
+    plt_show(save_path=save_path, bbox_inches=bbox)
 
 
 def _remove_none_labels(labeling):
