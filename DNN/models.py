@@ -109,8 +109,8 @@ class CNN(MLP):
     ):
         super(MLP, self).__init__()
 
-        kernel_size = 7
-        n_channels = 20
+        kernel_size = 11
+        n_channels = 40
 
         self.device = device
         self.non_linearity = non_linearity
@@ -140,7 +140,6 @@ class CNN(MLP):
                     bias=True,
                 )
             )
-            # self.append(nn.AvgPool1d())
         self.append(
             nn.Conv1d(
                 n_channels,
