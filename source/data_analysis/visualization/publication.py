@@ -177,7 +177,7 @@ def plt_show(no_axes=False, **kwargs):
         legend.get_frame().set_linewidth(2)
 
     # Axes
-    n_ticks = 2 + int(fig.get_figheight() * 0.5)
+    n_ticks = int(2.5 + fig.get_figheight() * 0.5)
     plt.locator_params(nbins=n_ticks - 1, min_n_ticks=n_ticks)
     ax.grid("on", alpha=0.4, linestyle="--")
     ax.spines[["right", "top"]].set_visible(False)
