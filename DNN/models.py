@@ -154,7 +154,7 @@ class CNN(MLP):
 
         # Initialize the parameters
         for mod in self.modules():
-            if isinstance(mod, nn.Conv1d):
+            if isinstance(mod, nn.Conv1d) or isinstance(mod, nn.Linear):
                 nn.init.xavier_normal_(mod.weight, gain=init_std)
                 # nn.init.kaiming_normal_(mod.weight, nonlinearity="leaky_relu")
                 nn.init.zeros_(mod.bias)
