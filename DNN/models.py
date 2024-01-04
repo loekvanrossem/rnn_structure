@@ -110,7 +110,7 @@ class CNN(MLP):
         super(MLP, self).__init__()
 
         kernel_size = 11
-        n_channels = 10
+        n_channels = 20
 
         self.device = device
         self.non_linearity = non_linearity
