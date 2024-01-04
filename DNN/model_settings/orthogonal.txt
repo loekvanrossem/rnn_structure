@@ -6,8 +6,8 @@ low_init_deep MLP leaky_relu 0.4 0.0000015 100 10 1500 5 0 0 0 0
 high_init_default MLP leaky_relu 2.0 0.0000015 100 4 750 2 0 0 0 0
 low_init_default MLP leaky_relu 0.4 0.0000015 100 4 1500 2 0 0 0 0
 
-high_init_tanh MLP tanh 2.0 0.0000015 100 4 750 2 0 0 0 0
-low_init_tanh MLP tanh 0.4 0.0000015 100 4 1500 2 0 0 0 0
+high_init_tanh MLP tanh 2.5 0.0000015 100 4 750 2 0 0 0 0
+low_init_tanh MLP tanh 0.5 0.0000015 100 4 1500 2 0 0 0 0
 
 high_init_skip ResNet tanh 2.0 0.0000015 100 4 750 2 0 0 0 0
 low_init_skip ResNet tanh 0.4 0.0000015 100 4 1500 2 0 0 0 0

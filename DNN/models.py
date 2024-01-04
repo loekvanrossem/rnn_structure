@@ -109,8 +109,8 @@ class CNN(MLP):
     ):
         super(MLP, self).__init__()
 
-        kernel_size = 11
-        n_channels = 50
+        kernel_size = 7
+        n_channels = 20
 
         self.device = device
         self.non_linearity = non_linearity
@@ -140,6 +140,7 @@ class CNN(MLP):
                     bias=True,
                 )
             )
+            # self.append(nn.AvgPool1d())
         self.append(
             nn.Conv1d(
                 n_channels,
@@ -155,8 +156,8 @@ class CNN(MLP):
         # Initialize the parameters
         for mod in self.modules():
             if isinstance(mod, nn.Conv1d):
-                # nn.init.xavier_normal_(mod.weight, gain=init_std)
-                nn.init.kaiming_normal_(mod.weight, nonlinearity="leaky_relu")
+                nn.init.xavier_normal_(mod.weight, gain=init_std)
+                # nn.init.kaiming_normal_(mod.weight, nonlinearity="leaky_relu")
                 nn.init.zeros_(mod.bias)
 
         self.to(device)
