@@ -125,7 +125,7 @@ class CNN(MLP):
                 n_channels,
                 kernel_size=kernel_size,
                 stride=1,
-                padding=int((kernel_size - 1) / 2),
+                # padding=int((kernel_size - 1) / 2),
                 bias=True,
             )
         )
@@ -136,7 +136,7 @@ class CNN(MLP):
                     n_channels,
                     kernel_size=kernel_size,
                     stride=1,
-                    padding=int((kernel_size - 1) / 2),
+                    # padding=int((kernel_size - 1) / 2),
                     bias=True,
                 )
             )
@@ -146,11 +146,13 @@ class CNN(MLP):
                 1,
                 kernel_size=kernel_size,
                 stride=1,
-                padding=int((kernel_size - 1) / 2),
+                # padding=int((kernel_size - 1) / 2),
                 bias=True,
             )
         )
-        self.append(nn.Linear(hidden_dim, output_size, bias=True))
+        self.append(
+            nn.Linear(hidden_dim - kernel_size * n_hid_layers, output_size, bias=True)
+        )
 
         # Initialize the parameters
         for mod in self.modules():
