@@ -143,8 +143,8 @@ def pub_show(save_path: Optional[str] = None, border_color="0.25", **kwargs):
         ax.tick_params(axis=axis, colors=border_color, width=3, length=4)
 
     if save_path:
-        plt.savefig(save_path, dpi=200, **kwargs)
-        plt.savefig(save_path + ".eps", format="eps", **kwargs)
+        plt.savefig(save_path, dpi=200, bbox_inches="tight", **kwargs)
+        plt.savefig(save_path + ".eps", bbox_inches="tight", format="eps", **kwargs)
 
     plt.show()
 
