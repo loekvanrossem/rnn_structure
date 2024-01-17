@@ -189,13 +189,15 @@ def plt_show(no_axes=False, **kwargs):
         if label[0] == "_":
             continue
         mean = np.mean(points.get_offsets().data, axis=0)
+        x_pos = max(min(mean[0], ax.get_xlim()[1]), ax.get_xlim()[0])
+        y_pos = max(min(mean[1], ax.get_ylim()[1]), ax.get_ylim()[0])
         color = points.get_facecolor()
         # color = color**2
         color = color - np.min(color)
         color[0][3] = 1
         plt.text(
-            mean[0],
-            mean[1],
+            x_pos,
+            y_pos,
             label,
             color=color,
             path_effects=[
