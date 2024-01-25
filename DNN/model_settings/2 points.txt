@@ -22,3 +22,6 @@ gain_1.3 MLP leaky_relu 1.3 0.0015 500 20 3000 10 1 0.5 1 1
 gain_1.4 MLP leaky_relu 1.4 0.0005 500 20 3000 10 1 0.5 1 1
 
 gain_1.6 MLP leaky_relu 1.6 0.000003 500 20 3000 10 1 0.5 1 1
+
+
+adam MLP leaky_relu 1.0 0.000001 500 20 3000 10 1 0.5 1 1
