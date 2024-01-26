@@ -118,6 +118,11 @@ def set_color_gradient(index=0, N=10):
     plt.rcParams["image.cmap"] = f"Colormap_seq_{index}"
 
 
+def skip_colors(n):
+    for _ in range(n):
+        plt.plot(0, 0)
+
+
 def pub_show(save_path: Optional[str] = None, border_color="0.25", **kwargs):
     fig = plt.gcf()
     ax = plt.gca()
@@ -143,8 +148,9 @@ def pub_show(save_path: Optional[str] = None, border_color="0.25", **kwargs):
         ax.tick_params(axis=axis, colors=border_color, width=3, length=4)
 
     if save_path:
-        plt.savefig(save_path, dpi=200, bbox_inches="tight", **kwargs)
-        plt.savefig(save_path + ".eps", bbox_inches="tight", format="eps", **kwargs)
+        kwargs.setdefault("bbox_inches", "tight")
+        plt.savefig(save_path, dpi=200, **kwargs)
+        plt.savefig(save_path + ".eps", format="eps", **kwargs)
 
     plt.show()
 
@@ -289,7 +295,7 @@ def im_show(
     for spine in ax.spines.values():
         spine.set_edgecolor("black")
 
-    lims = ax.get_images()[0].get_clim()
+    # lims = ax.get_images()[0].get_clim()
 
     if colorbar:
         cb = plt.colorbar(ax=ax, shrink=0.8, aspect=15)
