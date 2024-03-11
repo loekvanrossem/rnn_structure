@@ -1,7 +1,11 @@
-name: RNN
+name: rnn_structure
+
+channels:
+  - conda-forge
+  - pytorch
 
 dependencies:
-  - python>=3.8
+  - python>=3.10
   - ipython
   - ipykernel
   - ipywidgets
@@ -13,18 +17,13 @@ dependencies:
   - pandas>=2.0.0
   - pytables
   - scikit-learn
+  - numba
 
   - matplotlib
-  - gif
   - plotly
+  - gif
 
-  # The below should only be run on a node with a GPU!
-  - conda-forge::cudatoolkit>=11.8
-  - nvidia::cuda>=11.8
-
-  # Example of installing pytorch & torchvision
-  - pytorch::pytorch-cuda>=11.8
-  - pytorch::pytorch>=1.7.1
-  - pytorch::torchvision>=0.15
+  - pytorch>=1.7.1
+  - torchvision>=0.15
 
   - pip
