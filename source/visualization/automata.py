@@ -171,7 +171,7 @@ def display_automata(
         )  # Vary state size based on number of sequences
 
         if state == initial_state:
-            color = "red"
+            color = "black"
         elif has_all_transitions(state, automaton.transition_function):
             color = "blue"
         else:
