@@ -74,12 +74,20 @@ def layers_to_coordinates(
         A pair of x,y coordinates for each state
     """
     margin_size = 1
-    x_step = width / (len(layers) - 1 + 2 * margin_size)
+    num_layers = len(layers)
+    if num_layers == 0:
+        return {}
 
+    x_step = width / (num_layers - 1 + 2 * margin_size)
     coordinates = {}
+
     for n_x, layer in enumerate(layers):
         x_coordinate = (n_x + margin_size) * x_step
-        y_step = height / (len(layer) - 1 + 2 * margin_size)
+        num_states_in_layer = len(layer)
+        if num_states_in_layer == 0:
+            continue
+
+        y_step = height / (num_states_in_layer - 1 + 2 * margin_size)
         for n_y, state in enumerate(layer):
             y_coordinate = (n_y + margin_size) * y_step
             coordinates[state] = (x_coordinate, y_coordinate)
