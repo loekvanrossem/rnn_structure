@@ -97,17 +97,28 @@ def layers_to_coordinates(
 
 def has_all_transitions(
     state: State, transition_function: dict[tuple[State, str], State]
-):
-    """Return true if the state has all possible transitions within the automaton."""
+) -> bool:
+    """
+    Return True if the state has transitions for all possible input symbols.
 
-    # Get set of possible input symbols
-    input_symbols = set()
-    for _, symbol in transition_function.keys():
-        input_symbols.update(symbol)
+    Parameters
+    ----------
+    state : State
+        The state to check for transitions
+    transition_function : dict[tuple[State, str], State]
+        The transition function of the automaton
 
-    # Test if transitions exists
+    Returns
+    -------
+    bool
+        True if transitions exist for all possible input symbols, False otherwise
+    """
+    # Extract input symbols from transition_function keys
+    input_symbols = {symbol for (_, symbol) in transition_function.keys()}
+
+    # Check if transitions exist for all possible input symbols
     for symbol in input_symbols:
-        if (state, symbol) not in transition_function.keys():
+        if (state, symbol) not in transition_function:
             return False
     return True
 
@@ -123,13 +134,13 @@ def display_automata(
 
     Parameters
     ----------
-    Automaton : Automaton
+    automaton : Automaton
         The automaton to display
     axes : axes.Axes, optional, default None
         If provided plot on this axes
-    width : float, optional, default 1.0
+    width : float, optional
         The width of the image
-    height : float, optional, default 1.0
+    height : float, optional
         The height of the image
     """
     transitions = automaton.transition_function
@@ -137,6 +148,8 @@ def display_automata(
     initial_state = automaton.initial_state
     layers = state_placement(automaton)
     coordinates = layers_to_coordinates(layers, width=width, height=height)
+    symbols = list(automaton.alphabet)
+    symbols.sort()
 
     if not ax:
         figure, ax = plt.subplots()
@@ -181,10 +194,7 @@ def display_automata(
         )
 
         # Plot transitions
-        symbols = []
         for (prev_state, input_symbol), next_state in transitions.items():
-            if input_symbol not in symbols:
-                symbols.append(input_symbol)
             x_prev, y_prev = coordinates[prev_state]
             x_next, y_next = coordinates[next_state]
             x_start, y_start, x_end, y_end = x_prev, y_prev, x_next, y_next
