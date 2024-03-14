@@ -123,6 +123,11 @@ def has_all_transitions(
     return True
 
 
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.patheffects as pe
+
+
 def display_automata(
     automaton: Automaton,
     ax: Optional[axes.Axes] = None,
@@ -150,6 +155,7 @@ def display_automata(
     coordinates = layers_to_coordinates(layers, width=width, height=height)
     symbols = list(automaton.alphabet)
     symbols.sort()
+    symbol_indices = {symbol: idx for idx, symbol in enumerate(symbols)}
 
     if not ax:
         figure, ax = plt.subplots()
@@ -158,17 +164,23 @@ def display_automata(
 
     scale_x, scale_y = axes_scale(ax)
 
+    # Plot states
     for state, (x, y) in coordinates.items():
-        # Plot states
-        radius = 0.02
-        if has_all_transitions(state, automaton.transition_function):
+        radius = 0.03 / (
+            1 + np.exp(-len(state.name.split(", ")))
+        )  # Vary state size based on number of sequences
+
+        if state == initial_state:
+            color = "red"
+        elif has_all_transitions(state, automaton.transition_function):
             color = "blue"
         else:
             color = "gray"
-        circle = plt.Circle((x, y), radius=radius, color=color)
+
+        circle = plt.Circle(
+            (x, y), radius=radius, color=color, alpha=0.8
+        )  # Add transparency
         ax.add_artist(circle)
-        circle_boundary = plt.Circle((x, y), radius=radius, color="black", fill=False)
-        ax.add_artist(circle_boundary)
 
         # Plot outputs
         output = outputs[state]
@@ -183,49 +195,58 @@ def display_automata(
             )
 
         # Plot initial state name
-        (x, y) = coordinates[initial_state]
+        (x_init, y_init) = coordinates[initial_state]
         ax.text(
-            x - 0.04,
-            y + 0.03,
+            x_init - 0.04,
+            y_init + 0.03,
             "initial",
             fontsize=8,
             path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
             clip_on=True,
         )
 
-        # Plot transitions
-        for (prev_state, input_symbol), next_state in transitions.items():
-            x_prev, y_prev = coordinates[prev_state]
-            x_next, y_next = coordinates[next_state]
-            x_start, y_start, x_end, y_end = x_prev, y_prev, x_next, y_next
-            angleA = 90 + (y_prev - y_next) * 36
-            if prev_state == next_state:
-                x_start -= 0.025
-                y_start += 0.01
-                x_end += 0.035
-                y_end += 0.01
-                angleB = 115
-            else:
-                angleB = 180
-            transition = patches.FancyArrowPatch(
-                (x_start, y_start),
-                (x_end, y_end),
-                arrowstyle="Fancy,head_length=3,head_width=3",
-                connectionstyle=f"angle3,angleA={angleA},angleB={angleB}",
-                shrinkA=10,
-                shrinkB=10,
-            )
-            ax.add_artist(transition)
-            # Add input symbol label
-            symbol_number = symbols.index(input_symbol)
-            ax.text(
-                0.55 * x_prev + 0.45 * x_next + 0.2 * symbol_number * scale_x,
-                0.2 * y_prev + 0.8 * y_next + 0.2 * scale_y,
-                input_symbol,
-                fontsize=8,
-                path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
-                clip_on=True,
-            )
+    # Plot transitions
+    for (prev_state, input_symbol), next_state in transitions.items():
+        x_prev, y_prev = coordinates[prev_state]
+        x_next, y_next = coordinates[next_state]
+        x_start, y_start, x_end, y_end = x_prev, y_prev, x_next, y_next
+        angleA = 90 + (y_prev - y_next) * 36
+        if prev_state == next_state:
+            x_start -= 0.025
+            y_start += 0.01
+            x_end += 0.035
+            y_end += 0.01
+            angleB = 115
+        else:
+            angleB = 180
+        transition = patches.FancyArrowPatch(
+            (x_start, y_start),
+            (x_end, y_end),
+            arrowstyle="Fancy,head_length=3,head_width=3",
+            connectionstyle=f"angle3,angleA={angleA},angleB={angleB}",
+            shrinkA=10,
+            shrinkB=10,
+        )
+        ax.add_artist(transition)
+
+        # Compute label position based on transition angle
+        label_offset_x = 0.2 * scale_x * np.cos(np.radians(angleA))
+        label_offset_y = 0.2 * scale_y * np.sin(np.radians(angleA))
+
+        # Add input symbol label
+        symbol_number = symbol_indices[input_symbol]
+        ax.text(
+            0.55 * x_prev
+            + 0.45 * x_next
+            + label_offset_x
+            + 0.2 * symbol_number * scale_x,
+            0.2 * y_prev + 0.8 * y_next + label_offset_y + 0.2 * scale_y,
+            input_symbol,
+            fontsize=8,
+            path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
+            clip_on=True,
+            color="black",
+        )
 
     ax.set_aspect(1)
     ax.get_xaxis().set_visible(False)
