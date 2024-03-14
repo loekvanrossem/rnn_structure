@@ -181,6 +181,7 @@ class Compiler:
         tracked_datasets: list[TensorDataset],
         n_epochs=100,
         batch_size=32,
+        progress_bar=True,
         conv_thresh: float = 0,
     ):
         """
@@ -210,7 +211,9 @@ class Compiler:
             n_train_data += len(dataset)
 
         # Train
-        iterator = trange(n_epochs, desc="Training", unit="steps")
+        iterator = trange(
+            n_epochs, desc="Training", unit="steps", disable=not progress_bar
+        )
         for epoch in iterator:
             # Store intermediate states
             self.model.eval()
@@ -240,8 +243,3 @@ class Compiler:
 
             if train_loss < conv_thresh:
                 return
-        # except Exception as e:
-        #     traceback.print_exc()
-        #     raise e
-        # finally:
-        #     return
