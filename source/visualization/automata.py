@@ -234,25 +234,40 @@ def display_automata(
 
 class AutomatonAnimation(animation.AnimationSubPlot):
     """
-    Display an automaton varying over time
+    Display an automaton varying over time.
 
+    Parameters
+    ----------
     automaton_history : AutomatonHistory
-        The automaton history to be displayed
+        The automaton history to be displayed.
     """
 
     def __init__(self, automaton_history: AutomatonHistory):
         self.automaton_history = automaton_history
 
     def plot(self, ax: axes.Axes):
-        try:
-            display_automata(self.automaton_history[-1], ax=ax)
-        except KeyError:
-            pass  # Some epochs might not have generated a valid automata
         self.ax = ax
+        self._display_current_automaton(ax)
 
     def update(self, parameter: int):
+        self.ax.clear()
+        self._display_current_automaton(self.ax, parameter)
+
+    def _display_current_automaton(self, ax: axes.Axes, index: int = -1):
+        """
+        Display the automaton at the given index in the history.
+
+        Parameters
+        ----------
+        ax : axes.Axes
+            The axes object to plot on.
+        index : int, optional
+            The index of the automaton in the history. Default is -1 (last).
+        """
         try:
-            self.ax.clear()
-            display_automata(self.automaton_history[parameter], ax=self.ax)
+            automaton = self.automaton_history[index]
+            display_automata(automaton, ax=ax)
+            self.ax = ax
         except KeyError:
-            self.ax.clear()  # Some epochs might not have generated a valid automata
+            # Some epochs might not have generated a valid automaton
+            pass
