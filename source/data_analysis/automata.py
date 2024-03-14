@@ -105,7 +105,7 @@ class AutomatonHistory:
 
     Methods
     -------
-    get_state_changes() -> tuple[list[int], list[int]]:
+    get_state_changes() -> Tuple[List[int], List[int]]:
         Return the number of state mergers and splits per epoch.
     """
 
@@ -124,7 +124,7 @@ class AutomatonHistory:
 
     def __getitem__(self, epoch: int) -> Automaton:
         """Get the automaton at a certain epoch."""
-        if epoch in self._automata.keys():
+        if epoch in self._automata:
             automaton = self._automata[epoch]
         else:
             states = self.states[epoch]
@@ -138,14 +138,11 @@ class AutomatonHistory:
         return automaton
 
     @staticmethod
-    def _rem_add_to_merg_split(n_removed: int, n_added: int) -> tuple[int, int]:
+    def _compute_state_changes(n_removed: int, n_added: int) -> tuple[int, int]:
         """Compute the number of mergers and splits from the number of removed and added states."""
         n_mergers = (1 / 3) * (2 * n_removed - n_added)
         n_splits = (1 / 3) * (2 * n_added - n_removed)
-        # if (not n_mergers.is_integer()) or (not n_splits.is_integer()):
-        #     raise ValueError("Numbers provided do not represent valid state changes")
-        # n_mergers, n_splits = int(n_mergers), int(n_splits)
-        return n_mergers, n_splits
+        return int(n_mergers), int(n_splits)
 
     def get_state_changes(self) -> tuple[list[int], list[int]]:
         """
@@ -153,21 +150,18 @@ class AutomatonHistory:
 
         Returns
         -------
-        mergers : list[int]
-            The number of state mergers per epoch
-        splits : list[int]
-            The number of state splits per epoch
+        Tuple[List[int], List[int]]:
+            The number of state mergers and splits per epoch.
         """
         mergers = []
         splits = []
         old_states = self.states[0]
-        for states in self.states:
-            n_removed = len(set(old_states).difference(set(states)))
-            n_added = len(set(states).difference(set(old_states)))
-            n_mergers, n_splits = self._rem_add_to_merg_split(n_removed, n_added)
+        for states in self.states[1:]:
+            n_removed = len(set(old_states) - set(states))
+            n_added = len(set(states) - set(old_states))
+            n_mergers, n_splits = self._compute_state_changes(n_removed, n_added)
             mergers.append(n_mergers)
             splits.append(n_splits)
-
             old_states = states
 
         return mergers, splits
