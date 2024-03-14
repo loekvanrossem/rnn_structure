@@ -1,4 +1,4 @@
-from enum import auto
+import warnings
 from typing import Optional
 
 import numpy as np
@@ -247,27 +247,23 @@ class AutomatonAnimation(animation.AnimationSubPlot):
 
     def plot(self, ax: axes.Axes):
         self.ax = ax
-        self._display_current_automaton(ax)
+        self._display_current_automaton()
 
     def update(self, parameter: int):
         self.ax.clear()
-        self._display_current_automaton(self.ax, parameter)
+        self._display_current_automaton(parameter)
 
-    def _display_current_automaton(self, ax: axes.Axes, index: int = -1):
+    def _display_current_automaton(self, index: int = -1):
         """
         Display the automaton at the given index in the history.
 
         Parameters
         ----------
-        ax : axes.Axes
-            The axes object to plot on.
         index : int, optional
             The index of the automaton in the history. Default is -1 (last).
         """
         try:
             automaton = self.automaton_history[index]
-            display_automata(automaton, ax=ax)
-            self.ax = ax
+            display_automata(automaton, ax=self.ax)
         except KeyError:
-            # Some epochs might not have generated a valid automaton
-            pass
+            warnings.warn("Invalid automaton encountered", UserWarning)
