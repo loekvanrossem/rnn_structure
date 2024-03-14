@@ -1,3 +1,5 @@
+from typing import Any
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -39,7 +41,7 @@ class Automaton:
 
     Methods
     -------
-    compute(input_string : str) -> str
+    compute(input_string : str) -> np.ndarray
         Compute the output for a given input string.
     """
 
@@ -48,16 +50,37 @@ class Automaton:
         states: list[State],
         initial_state: State,
         transition_function: dict[tuple[State, str], State],
-        output_function: dict[State, np.ndarray],
+        output_function: dict[State, Any],
     ) -> None:
         self.states = states
         self.initial_state = initial_state
         self.transition_function = transition_function
         self.output_function = output_function
-        self.alphabet = set(symbol for (_, symbol) in transition_function.keys())
+
+    @property
+    def alphabet(self) -> set[str]:
+        """The alphabet of input symbols."""
+        return {symbol for (_, symbol) in self.transition_function.keys()}
 
     def compute(self, input_string: str) -> np.ndarray:
-        """Compute the output for a given input string."""
+        """
+        Compute the output for a given input string.
+
+        Parameters
+        ----------
+        input_string : str
+            The input string to compute the output for.
+
+        Returns
+        -------
+        output : np.ndarray
+            The output computed by the automaton.
+        """
+        for symbol in input_string:
+            if symbol not in self.alphabet:
+                raise ValueError(
+                    f"Symbol '{symbol}' is not in the alphabet of the automaton."
+                )
         state = self.initial_state
         for input_symbol in input_string:
             state = self.transition_function[state, input_symbol]
