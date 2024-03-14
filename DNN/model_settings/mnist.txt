@@ -1,8 +1,0 @@
-model_type nonlinearity gain lr P L n_epochs hidden_layer dx2 dy2 in_dim out_dim
-deep_low_init MLP leaky_relu 0.7 0.000005 100 10 50 5 0 0 0 0
-deep_high_init MLP leaky_relu 1.5 0.00001 50 10 50 5 0 0 0 0
-
-vlow_init MLP leaky_relu 0.05 0.00001 100 4 50 2 0 0 0 0
-low_init MLP leaky_relu 0.5 0.000002 100 4 50 2 0 0 0 0
-high_init MLP leaky_relu 1.5 0.000002 100 4 50 2 0 0 0 0
-vhigh_init MLP leaky_relu 2.0 0.000005 100 4 50 2 0 0 0 0

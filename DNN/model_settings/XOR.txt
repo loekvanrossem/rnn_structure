@@ -1,7 +1,0 @@
-model_type nonlinearity gain lr P L n_epochs hidden_layer dx2 dy2 in_dim out_dim
-
-rich MLP leaky_relu 0.7 0.000003 500 20 1000 10 1 0.5 1 1
-intermediate MLP leaky_relu 1.25 0.000002 500 20 1000 10 1 0.5 1 1
-lazy MLP leaky_relu 1.5 0.0000003 500 20 1000 10 1 0.5 1 1
-very_lazy MLP leaky_relu 2.0 0.0000003 500 20 1000 10 1 0.5 1 1
-shallow MLP leaky_relu 0.0015 0.00003 500 1 40000 0 1 0.5 1 1

@@ -1,4 +1,3 @@
-import traceback
 from abc import ABC, abstractmethod
 from typing import Callable, Optional
 
@@ -211,7 +210,6 @@ class Compiler:
             n_train_data += len(dataset)
 
         # Train
-        # try:
         iterator = trange(n_epochs, desc="Training", unit="steps")
         for epoch in iterator:
             # Store intermediate states

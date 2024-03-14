@@ -50,6 +50,8 @@ class Encoding(ABC):
         return symbol
 
     def _parse_value(self, value):
+        if isinstance(value, torch.Tensor):
+            value = value.cpu()
         value = np.array(value, dtype=np.float32)
         value = np.round(value, 10)
         value = tuple(value)

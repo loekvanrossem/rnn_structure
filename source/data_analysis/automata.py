@@ -34,6 +34,8 @@ class Automaton:
         A dictionary that says to which state each state transitions for a given input symbol
     output_funtion : dict((state),output)
         A dictionary assigning an output to each state
+    alphabet : set[str]
+        The alphabet of input symbols
 
     Methods
     -------
@@ -52,6 +54,7 @@ class Automaton:
         self.initial_state = initial_state
         self.transition_function = transition_function
         self.output_function = output_function
+        self.alphabet = set(symbol for (_, symbol) in transition_function.keys())
 
     def compute(self, input_string: str) -> np.ndarray:
         """Compute the output for a given input string."""
