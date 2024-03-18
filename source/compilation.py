@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Optional
+from xmlrpc.client import Boolean
 
 import torch
 from torch import Tensor, nn
@@ -29,6 +30,8 @@ class Tracker(ABC):
         Store the current activitities. Call this every epoch.
     get_trace() -> pd.DataFrame
         Return the stored data.
+    get_entry(epoch: int):
+        Return data at a specific epoch.
     reset():
         Delete stored data
     """
@@ -49,6 +52,9 @@ class Tracker(ABC):
         trace : Dataframe (n_epochs, ...)
             dataframe containing the tracked quantity for each epoch.
         """
+        if not self._trace:
+            raise ValueError("No data stored.")
+
         index_names = self._trace[0].index.names
         trace = pd.concat(self._trace, keys=list(range(len(self._trace))))
         trace.index = trace.index.set_names(["Epoch"] + index_names)
@@ -60,13 +66,20 @@ class Tracker(ABC):
 
     def reset(self) -> None:
         """Delete stored data"""
-        self._trace = []
+        self._trace.clear()
 
 
 class ScalarTracker(Tracker):
-    """Stores a scalar quantity."""
+    """
+    Stores a scalar quantity.
 
-    def __init__(self, track_function: Callable):
+    Attributes
+    ----------
+    track_function : Callable
+        Function computing the scalar quantity each epoch.
+    """
+
+    def __init__(self, track_function: Callable) -> None:
         self.track_function = track_function
         super().__init__()
 
@@ -81,7 +94,7 @@ class ActivationTracker(Tracker):
 
     Attributes
     ----------
-    model : Model
+    model : nn.Module
         The neural network from which to track activations
     track function : function(Tensor) -> Tensor
         The activations to be tracked as a function of the inputs
@@ -150,14 +163,19 @@ class Compiler:
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
-        if trackers is None:
-            self.trackers = {
-                # "loss": ScalarTracker(lambda: self.validation(tracked_datasets))
-            }
-        else:
-            self.trackers = trackers
+        self.trackers = trackers or {}
 
-    def validation(self, datasets) -> pd.DataFrame:
+    def validation(self, datasets: list[TensorDataset]) -> pd.DataFrame:
+        """
+        Compute validation loss on the given datasets.
+
+        Parameters
+        ----------
+            datasets (List[TensorDataset]): List of datasets for validation.
+
+        Returns:
+            pd.DataFrame: Validation loss for each dataset.s
+        """
         loss = pd.DataFrame()
         for i, dataset in enumerate(datasets):
             dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
@@ -178,10 +196,9 @@ class Compiler:
     def training_run(
         self,
         training_datasets: list[TensorDataset],
-        tracked_datasets: list[TensorDataset],
-        n_epochs=100,
-        batch_size=32,
-        progress_bar=True,
+        n_epochs: int,
+        batch_size: int,
+        progress_bar: bool = True,
         conv_thresh: float = 0,
     ):
         """
@@ -190,25 +207,20 @@ class Compiler:
         Parameters
         ----------
         training_datasets: list[datasets]
-        tracked_datasets: list[datasets]
-        n_epochs: int, default 100
-        batch_size: int default 32
+        n_epochs: int
+        batch_size: int
             batch size during training
+        progress_bar : bool, optional
+            Whether to show a progress bar
         conv_thresh: float, optional
             if provided stop training when loss is below this value
         """
         # Generate trainloaders
-        trainloaders = []
-        n_train_data = 0
-        for dataset in training_datasets:
-            trainloaders.append(
-                DataLoader(
-                    dataset,
-                    batch_size=batch_size,
-                    shuffle=True,
-                )
-            )
-            n_train_data += len(dataset)
+        trainloaders = [
+            DataLoader(dataset, batch_size=batch_size, shuffle=True)
+            for dataset in training_datasets
+        ]
+        n_train_data = sum(len(dataset) for dataset in training_datasets)
 
         # Train
         iterator = trange(
@@ -221,20 +233,20 @@ class Compiler:
                 tracker.track()
 
             # Training step
-            train_loss = 0
-            for trainloader, dataset in zip(trainloaders, training_datasets):
-                train_loss += self.model.train_step(
-                    self.optimizer, self.criterion, trainloader
-                ) * (len(dataset) / n_train_data)
-            try:
-                val_loss = (
-                    self.trackers["loss"]
-                    .get_entry(-1)
-                    .query("Dataset==0")
-                    .to_numpy()[0, 0]
-                )
-            except KeyError:
-                val_loss = np.NaN
+            train_loss = sum(
+                self.model.train_step(self.optimizer, self.criterion, trainloader)
+                * (len(dataset) / n_train_data)
+                for trainloader, dataset in zip(trainloaders, training_datasets)
+            )
+
+            val_loss = (
+                self.trackers.get("loss")
+                .get_entry(-1)
+                .query("Dataset==0")
+                .to_numpy()[0, 0]
+                if "loss" in self.trackers
+                else np.NaN
+            )
 
             iterator.set_postfix(
                 train_loss="{:.5f}".format(train_loss),

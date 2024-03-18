@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, List
 
 import numpy as np
 import pandas as pd
@@ -10,14 +10,14 @@ from preprocessing import Encoding
 
 
 def get_activations(
-    datasets: list[Dataset], output_function: Callable, encoding: Encoding
+    datasets: List[Dataset], output_function: Callable, encoding: Encoding
 ) -> pd.DataFrame:
     """
     Get the activations in response to input data.
 
     Parameters
     ----------
-    dataset : list[Dataset]
+    datasets : List[Dataset]
         A list of datasets
     output_function : Callable
         Function defining the activation response to an input
@@ -26,16 +26,18 @@ def get_activations(
 
     Returns
     -------
-    activations : pd.Dataframe(Dataset, Input)
+    activations : pd.DataFrame(Dataset, Input)
         Dataframe containing the activations
     """
     activations = []
-    warn_label = False
-    for dataset in datasets:
-        dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
-        for batch in dataloader:
-            inputs, outputs = batch
+    unrecognized_labels = False
 
+    # Iterate through datasets
+    for dataset_index, dataset in enumerate(datasets):
+        dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=False)
+
+        # Iterate through batches
+        for inputs, _ in dataloader:
             # Get labels
             labels = []
             for input in inputs:
@@ -44,18 +46,26 @@ def get_activations(
                     label = "".join(str(char) for char in decoding)
                 except KeyError:
                     label = tuple(np.squeeze(input.cpu()).numpy())
-                    warn_label = True
                 labels.append(label)
 
-            # Store activities
-            act_this_dataset = output_function(inputs)
-            act_this_dataset = act_this_dataset.cpu().detach().numpy()
-            act_this_dataset = pd.DataFrame(act_this_dataset, labels)
-            activations.append(act_this_dataset)
+            # Check for unrecognized labels
+            if any(label is None for label in labels):
+                unrecognized_labels = True
+
+            # Get activations
+            activations_this_dataset = output_function(inputs)
+            activations_this_dataset = activations_this_dataset.cpu().detach().numpy()
+
+            # Store activations in DataFrame
+            activation_df = pd.DataFrame(activations_this_dataset, index=labels)
+            activations.append(activation_df)
+
+    # Combine activations into a single DataFrame
     activations = pd.concat(activations, keys=list(range(len(datasets))))
     activations.index = activations.index.set_names(["Dataset", "Input"])
 
-    if warn_label:
+    # Warn if unrecognized labels were encountered
+    if unrecognized_labels:
         print("Some input labels were not recognized.")
 
     return activations
