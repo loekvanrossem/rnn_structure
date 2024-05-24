@@ -173,7 +173,7 @@ def display_automata(
         if state == initial_state:
             color = "black"
         elif has_all_transitions(state, automaton.transition_function):
-            color = "blue"
+            color = "#6096FD"
         else:
             color = "gray"
 
