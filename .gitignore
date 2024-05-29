@@ -1,1 +1,5 @@
 *.pyc
+plots
+.gitignore
+stock-news/trained_rnn.pt
+stock-news/data
