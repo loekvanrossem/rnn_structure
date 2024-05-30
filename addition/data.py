@@ -9,11 +9,16 @@ from torch.utils.data import TensorDataset
 # from preprocessing import Encoding
 
 
+def random_int(length: int):
+    return int("".join([str(np.random.choice(range(9))) for _ in range(length)]))
+
+
 def addition_datapoint(length: int, full_length: int):
     int_a_len = np.random.randint(1, length - 1)
     int_b_len = length - 1 - int_a_len
-    int_a = np.random.randint(10 ** (int_a_len - 1), 10 ** (int_a_len))
-    int_b = np.random.randint(10 ** (int_b_len - 1), 10 ** (int_b_len))
+    # int_a = np.random.randint(10 ** (int_a_len - 1), 10 ** (int_a_len))
+    # int_b = np.random.randint(10 ** (int_b_len - 1), 10 ** (int_b_len))
+    int_a, int_b = random_int(int_a_len), random_int(int_b_len)
     input = f"{int_a}+{int_b}"
     output = f"{int_a + int_b}"
     input = input + " " * (full_length - len(input))
