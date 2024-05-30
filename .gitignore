@@ -1,1 +1,8 @@
 *.pyc
+plots
+.gitignore
+stock-news/trained_rnn.pt
+stock-news/data
+stock-news/working/finance_news.txt
+addition/model.pt
+addition/model.pt
