@@ -10,7 +10,7 @@ from torch.utils.data import TensorDataset
 
 
 def random_int(length: int):
-    return int("".join([str(np.random.choice(range(9))) for _ in range(length)]))
+    return int("".join([str(np.random.choice(range(10))) for _ in range(length)]))
 
 
 def addition_datapoint(length: int, full_length: int):
