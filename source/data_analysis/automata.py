@@ -299,6 +299,25 @@ def to_automaton_history(
 def nondistinguishable_partition(automata):
     """
     Apply Hopcroft's algorithm to find a partition of nondistinguishable states.
+
+    Pseudocode:
+
+    P := {F, Q \ F}
+    W := {F, Q \ F}
+
+    while (W is not empty) do
+        choose and remove a set A from W
+        for each c in Σ do
+            let X be the set of states for which a transition on c leads to a state in A
+            for each set Y in P for which X ∩ Y is nonempty and Y \ X is nonempty do
+                replace Y in P by the two sets X ∩ Y and Y \ X
+                if Y is in W
+                    replace Y in W by the same two sets
+                else
+                    if |X ∩ Y| <= |Y \ X|
+                        add X ∩ Y to W
+                    else
+                        add Y \ X to W
     """
 
     out_0 = {s for s, o in automata.output_function.items() if np.argmax(o) == 0}
@@ -370,23 +389,3 @@ def reduce_automaton(automaton: Automaton):
     }
 
     return Automaton(states, initial_state, transition_function, output_function)
-
-
-## Hopcroft's algorithm
-
-# P := {F, Q \ F}
-# W := {F, Q \ F}
-
-# while (W is not empty) do
-#     choose and remove a set A from W
-#     for each c in Σ do
-#         let X be the set of states for which a transition on c leads to a state in A
-#         for each set Y in P for which X ∩ Y is nonempty and Y \ X is nonempty do
-#             replace Y in P by the two sets X ∩ Y and Y \ X
-#             if Y is in W
-#                 replace Y in W by the same two sets
-#             else
-#                 if |X ∩ Y| <= |Y \ X|
-#                     add X ∩ Y to W
-#                 else
-#                     add Y \ X to W
