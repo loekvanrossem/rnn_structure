@@ -10,7 +10,7 @@ from matplotlib import axes
 import matplotlib.style as mplstyle
 
 from visualization.basic_plotting import axes_scale
-from data_analysis.automata import Automaton, AutomatonHistory, State
+from data_analysis.automata import Automaton, AutomatonHistory, State, reduce_automaton
 from visualization import animation
 
 mplstyle.use("fast")
@@ -256,10 +256,13 @@ class AutomatonAnimation(animation.AnimationSubPlot):
     ----------
     automaton_history : AutomatonHistory
         The automaton history to be displayed.
+    reduce_automate : Boolean, default False
+        If true, merge nondistinguishable states
     """
 
-    def __init__(self, automaton_history: AutomatonHistory):
+    def __init__(self, automaton_history: AutomatonHistory, reduce_automata=False):
         self.automaton_history = automaton_history
+        self.reduce_automata = reduce_automata
 
     def plot(self, ax: axes.Axes):
         self.ax = ax
@@ -280,6 +283,8 @@ class AutomatonAnimation(animation.AnimationSubPlot):
         """
         try:
             automaton = self.automaton_history[index]
+            if self.reduce_automata:
+                automaton = reduce_automaton(automaton)
             display_automata(automaton, ax=self.ax)
         except KeyError:
             warnings.warn("Invalid automaton encountered", UserWarning)
