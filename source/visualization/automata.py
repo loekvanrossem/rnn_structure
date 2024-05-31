@@ -123,11 +123,6 @@ def has_all_transitions(
     return True
 
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.patheffects as pe
-
-
 def display_automata(
     automaton: Automaton,
     ax: Optional[axes.Axes] = None,
