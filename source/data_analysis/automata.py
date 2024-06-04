@@ -122,8 +122,13 @@ class AutomatonHistory:
         self.outputs = outputs
         self._automata = {}
 
+    def __len__(self):
+        return len(self.initial_states)
+
     def __getitem__(self, epoch: int) -> Automaton:
         """Get the automaton at a certain epoch."""
+        if epoch < 0:
+            epoch = len(self) + epoch
         if epoch in self._automata:
             automaton = self._automata[epoch]
         else:
@@ -289,3 +294,98 @@ def to_automaton_history(
     automaton_history = AutomatonHistory(states, initial_states, transitions, outputs)
 
     return automaton_history
+
+
+def nondistinguishable_partition(automata):
+    """
+    Apply Hopcroft's algorithm to find a partition of nondistinguishable states.
+
+    Pseudocode:
+
+    P := {F, Q \ F}
+    W := {F, Q \ F}
+
+    while (W is not empty) do
+        choose and remove a set A from W
+        for each c in Σ do
+            let X be the set of states for which a transition on c leads to a state in A
+            for each set Y in P for which X ∩ Y is nonempty and Y \ X is nonempty do
+                replace Y in P by the two sets X ∩ Y and Y \ X
+                if Y is in W
+                    replace Y in W by the same two sets
+                else
+                    if |X ∩ Y| <= |Y \ X|
+                        add X ∩ Y to W
+                    else
+                        add Y \ X to W
+    """
+
+    out_0 = {s for s, o in automata.output_function.items() if np.argmax(o) == 0}
+    out_1 = {s for s, o in automata.output_function.items() if np.argmax(o) == 1}
+    P = [out_0, out_1]
+    W = [out_0, out_1]
+
+    while len(W) > 0:
+        A = W.pop()
+        for char in automata.alphabet:
+            X = {
+                s
+                for (s, i), s_n in automata.transition_function.items()
+                if (s_n in A and i == char)
+            }  # set of states which transition via char to A
+            for Y in P:
+                Y_and_X = Y.intersection(X)
+                Y_min_X = Y.difference(X)
+                if len(Y_and_X) > 0 and len(Y_min_X) > 0:
+                    P.remove(Y)
+                    P.append(Y_and_X)
+                    P.append(Y_min_X)
+                    if Y in W:
+                        W.remove(Y)
+                        W.append(Y_and_X)
+                        W.append(Y_min_X)
+                    else:
+                        if len(Y_and_X) <= len(Y_min_X):
+                            W.append(Y_and_X)
+                        else:
+                            W.append(Y_min_X)
+    return P
+
+
+def reduce_automaton(automaton: Automaton):
+    """
+    Compute a reduced version of an automaton with redundant states merged.
+    """
+    P = nondistinguishable_partition(automaton)
+
+    states = [State(", ".join([s.name for s in group])) for group in P]
+    initial_state = next((s for s in states if "initial" in s.name.split(", ")), None)
+    transition_function = {
+        (
+            next(
+                (
+                    s_group
+                    for s_group in states
+                    if set(s.name.split(", ")) <= set(s_group.name.split(", "))
+                )
+            ),
+            i,
+        ): next(
+            (
+                s_group
+                for s_group in states
+                if set(s_n.name.split(", ")) <= set(s_group.name.split(", "))
+            )
+        )
+        for (s, i), s_n in automaton.transition_function.items()
+    }
+    output_function = {
+        s_group: next(
+            o
+            for s, o in automaton.output_function.items()
+            if set(s.name.split(", ")) <= set(s_group.name.split(", "))
+        )
+        for s_group in states
+    }
+
+    return Automaton(states, initial_state, transition_function, output_function)
