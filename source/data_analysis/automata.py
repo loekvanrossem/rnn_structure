@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
+from compilation import ActivationTracker
+
 
 class State:
     """
@@ -294,6 +296,38 @@ def to_automaton_history(
     automaton_history = AutomatonHistory(states, initial_states, transitions, outputs)
 
     return automaton_history
+
+
+def to_automaton(model, datasets, initial_hidden):
+    """
+    Return automaton for model on given data.
+
+    model : nn.Module
+    datasets : list[Dataset]
+    initial_hidden  : tensor
+    """
+
+    ## Get data
+    hidden_tracker = ActivationTracker(
+        model,
+        lambda inputs: model(inputs)[1][-1],
+        datasets,
+        initial=lambda: initial_hidden,
+    )
+    out_tracker = ActivationTracker(model, lambda inputs: model(inputs)[0], datasets)
+    hidden_tracker.track()
+    out_tracker.track()
+    data_hid = hidden_tracker.get_trace()
+    data_out = out_tracker.get_trace()
+
+    std = float(np.linalg.norm(data_hid.std()))
+    automaton = to_automaton_history(
+        data_hid,
+        data_out,
+        merge_distance=0.5 * std,
+    )[0]
+
+    return automaton
 
 
 def nondistinguishable_partition(automata):
