@@ -13,16 +13,12 @@ import pandas as pd
 from tqdm import trange
 
 from activations import get_activations
+from preprocessing import Encoding
 
 
 class Tracker(ABC):
     """
     Store some data of the model each epoch.
-
-    Attributes
-    ----------
-    model : Model
-        The model of which layers are to be tracked.
 
     Methods
     -------
@@ -94,8 +90,7 @@ class ActivationTracker(Tracker):
 
     Attributes
     ----------
-    model : nn.Module
-        The neural network from which to track activations
+    encoding : Encoding
     track function : function(Tensor) -> Tensor
         The activations to be tracked as a function of the inputs
     datasets : list[Dataset]
@@ -106,12 +101,12 @@ class ActivationTracker(Tracker):
 
     def __init__(
         self,
-        model: nn.Module,
+        encoding: Encoding,
         track_function: Callable[[Tensor], Tensor],
         datasets: list[Dataset],
         initial: Optional[Callable[[], Tensor]] = None,
     ) -> None:
-        self.model = model
+        self.encoding = encoding
         self.track_function = track_function
         self.datasets = datasets
         self.initial = initial
@@ -122,7 +117,7 @@ class ActivationTracker(Tracker):
         act_this_epoch = get_activations(
             self.datasets,
             self.track_function,
-            self.model.encoding,
+            self.encoding,
         )
 
         if self.initial is not None:
