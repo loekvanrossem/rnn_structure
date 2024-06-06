@@ -9,18 +9,28 @@ from torch.utils.data import TensorDataset
 # from preprocessing import Encoding
 
 
-def random_int(length: int):
-    return int("".join([str(np.random.choice(range(10))) for _ in range(length)]))
+def random_int(length: int, base: int = 10):
+    return "".join([str(np.random.choice(range(base))) for _ in range(length)])
 
 
-def addition_datapoint(length: int, full_length: int):
+def addition_datapoint(
+    length: int,
+    full_length: int,
+    binary: bool = False,
+):
+    base = 2 if binary else 10
+
     int_a_len = np.random.randint(1, length - 1)
     int_b_len = length - 1 - int_a_len
-    # int_a = np.random.randint(10 ** (int_a_len - 1), 10 ** (int_a_len))
-    # int_b = np.random.randint(10 ** (int_b_len - 1), 10 ** (int_b_len))
-    int_a, int_b = random_int(int_a_len), random_int(int_b_len)
+    int_a, int_b = random_int(int_a_len, base), random_int(int_b_len, base)
+    if binary:
+        sum = bin(int(int_a, 2) + int(int_b, 2))[2:]
+    else:
+        sum = int(int_a, 10) + int(int_b, 10)
+    # if binary:
+    #     int_a, int_b, sum = [bin(x)[2:] for x in (int_a, int_b, sum)]
     input = f"{int_a}+{int_b}"
-    output = f"{int_a + int_b}"
+    output = f"{sum}"
     input = input + " " * (full_length - len(input))
     output = output + " " * (full_length - len(output))
     return input, output
@@ -32,6 +42,7 @@ def addition_dataset(
     n_datapoints: int,
     seq_len: list[int],
     full_length: int,
+    binary: bool = False,
 ) -> TensorDataset:
     """
     Generate data for performing integer addition.
@@ -57,19 +68,10 @@ def addition_dataset(
     inputs, outputs = [], []
     for _ in range(n_datapoints):
         length = np.random.choice(seq_len)
-        input, output = addition_datapoint(length, full_length)
+        input, output = addition_datapoint(length, full_length, binary=binary)
         input, output = encoding(input), encoding(output)
         inputs.append(input)
         outputs.append(output)
-
-    # symbols = encoding.symbols
-    # if n_datapoints is None:
-    #     n_datapoints = len(symbols) ** seq_len
-    # # Generate input sequences
-    # inputs = gen_rand_seq(seq_len, symbols, n_datapoints)
-
-    # # Compute outputs
-    # outputs = np.apply_along_axis(problem, 1, inputs)
 
     # Prepare for torch
     inputs, outputs = np.array(inputs), np.array(outputs)
