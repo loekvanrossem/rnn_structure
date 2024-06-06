@@ -298,23 +298,24 @@ def to_automaton_history(
     return automaton_history
 
 
-def to_automaton(model, datasets, initial_hidden):
-    """
-    Return automaton for model on given data.
-
-    model : nn.Module
-    datasets : list[Dataset]
-    initial_hidden  : tensor
-    """
+def to_automaton(
+    hidden_function,
+    output_function,
+    initial_hidden,
+    datasets,
+    encoding,
+    merge_distance_frac=0.1,
+):
+    """Return automaton for model on given data."""
 
     ## Get data
     hidden_tracker = ActivationTracker(
-        model,
-        lambda inputs: model(inputs)[1][-1],
+        encoding,
+        hidden_function,
         datasets,
         initial=lambda: initial_hidden,
     )
-    out_tracker = ActivationTracker(model, lambda inputs: model(inputs)[0], datasets)
+    out_tracker = ActivationTracker(encoding, output_function, datasets)
     hidden_tracker.track()
     out_tracker.track()
     data_hid = hidden_tracker.get_trace()
@@ -324,7 +325,7 @@ def to_automaton(model, datasets, initial_hidden):
     automaton = to_automaton_history(
         data_hid,
         data_out,
-        merge_distance=0.5 * std,
+        merge_distance=merge_distance_frac * std,
     )[0]
 
     return automaton
