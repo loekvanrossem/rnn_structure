@@ -25,6 +25,7 @@ def seq_data(
     encoding: Encoding,
     n_datapoints: Optional[int] = None,
     seq_len: int = 4,
+    symbols: set = None,
 ) -> TensorDataset:
     """
     Generate data solving some problem on sequences.
@@ -41,13 +42,15 @@ def seq_data(
         The maximum number of sequences to generate
     seq_len : int, default 4
         The number of symbols in each sequences
+    symbols : set, optional
+        If provided only use these symbols in the sequences
 
     Returns
     -------
     dataset : TensorDataset
         Contains the inputs and outputs
     """
-    symbols = encoding.symbols
+    symbols = symbols if symbols else encoding.symbols
     if n_datapoints is None:
         n_datapoints = len(symbols) ** seq_len
     # Generate input sequences
