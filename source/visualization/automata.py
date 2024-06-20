@@ -284,7 +284,10 @@ class AutomatonAnimation(animation.AnimationSubPlot):
         try:
             automaton = self.automaton_history[index]
             if self.reduce_automata:
-                automaton = reduce_automaton(automaton)
+                try:
+                    automaton = reduce_automaton(automaton)
+                except StopIteration:
+                    warnings.warn("Invalid automaton encountered", UserWarning)
             display_automata(automaton, ax=self.ax)
         except KeyError:
             warnings.warn("Invalid automaton encountered", UserWarning)
