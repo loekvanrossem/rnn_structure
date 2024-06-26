@@ -5,4 +5,10 @@ stock-news/trained_rnn.pt
 stock-news/data
 stock-news/working/finance_news.txt
 addition/model.pt
-addition/model.pt
+
+.env
+.DS_Store
+__pycache__/
+wandb/
+outputs/
+.gitignore
