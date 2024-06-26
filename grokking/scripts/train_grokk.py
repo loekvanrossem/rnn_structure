@@ -41,7 +41,7 @@ def generate_long_input(dataset, length, N):
 
 def count_states(H, threshold):
     dist = scipy.spatial.distance_matrix(H, H)
-    threshold = 0.1 * np.max(dist)
+    threshold = 0.2 * np.max(dist)
     clustering = AgglomerativeClustering(
         n_clusters=None, distance_threshold=threshold
     ).fit(H)
