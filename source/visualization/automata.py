@@ -166,14 +166,19 @@ def display_automata(
         )  # Vary state size based on number of sequences
 
         if state == initial_state:
-            color = "black"
+            color = "#333333"
         elif has_all_transitions(state, automaton.transition_function):
-            color = "#6096FD"
+            color = "#d4ede8"
         else:
-            color = "gray"
+            color = "#808080"
 
         circle = plt.Circle(
-            (x, y), radius=radius, color=color, alpha=0.8
+            (x, y),
+            radius=radius,
+            facecolor=color,
+            edgecolor="#333333",
+            linewidth=2,
+            alpha=1,
         )  # Add transparency
         ax.add_artist(circle)
 
@@ -221,6 +226,7 @@ def display_automata(
             connectionstyle=f"angle3,angleA={angleA},angleB={angleB}",
             shrinkA=10,
             shrinkB=10,
+            color="#333333",
         )
         ax.add_artist(transition)
 
@@ -234,7 +240,7 @@ def display_automata(
             0.55 * x_prev
             + 0.45 * x_next
             + label_offset_x
-            + 0.2 * symbol_number * scale_x,
+            + 0.3 * symbol_number * scale_x,
             0.2 * y_prev + 0.8 * y_next + label_offset_y + 0.2 * scale_y,
             input_symbol,
             fontsize=8,
