@@ -167,10 +167,14 @@ def display_automata(
 
         if state == initial_state:
             color = "#333333"
+            opacity = 1
         elif has_all_transitions(state, automaton.transition_function):
             color = "#d4ede8"
+            opacity = 1
         else:
-            color = "#808080"
+            # color = "#808080"
+            color = "#d4ede8"
+            opacity = 0.5
 
         circle = plt.Circle(
             (x, y),
@@ -178,7 +182,7 @@ def display_automata(
             facecolor=color,
             edgecolor="#333333",
             linewidth=2,
-            alpha=1,
+            alpha=opacity,
         )  # Add transparency
         ax.add_artist(circle)
 
