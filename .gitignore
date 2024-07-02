@@ -12,3 +12,4 @@ __pycache__/
 wandb/
 outputs/
 .gitignore
+output.png

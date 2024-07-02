@@ -1,7 +1,6 @@
 nonlinearity gain lr P L n_epochs max_seq_len
-rich_backup tanh 0.00001 0.001 100 1 1000 7
 
-rich tanh 0.00001 0.001 100 1 1000 3
-lazy tanh 1.1 0.001 100 1 1000 7
+rich tanh 0.00001 0.001 100 1 2000 7
+lazy tanh 1.1 0.001 100 1 2000 7
 
 rich_3 0.000001 0.001100 1 1000 10

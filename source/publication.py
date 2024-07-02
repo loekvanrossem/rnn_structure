@@ -151,8 +151,8 @@ def pub_show(
 
     if save_path:
         kwargs.setdefault("bbox_inches", "tight")
-        plt.savefig(save_path, dpi=200, **kwargs)
-        plt.savefig(save_path + ".eps", format="eps", **kwargs)
+        # plt.savefig(save_path, dpi=200, **kwargs)
+        plt.savefig(save_path + ".pdf", format="pdf", **kwargs)
 
     if show_plot:
         plt.show()
