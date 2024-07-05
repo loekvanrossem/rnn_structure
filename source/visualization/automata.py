@@ -159,6 +159,8 @@ def display_automata(
 
     scale_x, scale_y = axes_scale(ax)
 
+    fontsize = 10
+
     # Plot states
     for state, (x, y) in coordinates.items():
         radius = 0.03 / (
@@ -186,16 +188,29 @@ def display_automata(
         )  # Add transparency
         ax.add_artist(circle)
 
+        # # Plot outputs
+        # output = outputs[state]
+        # if output is not None:
+        #     ax.text(
+        #         x - 0.08,
+        #         y - 0.04,
+        #         f"{tuple(np.round(output,2))}",
+        #         fontsize=fontsize,
+        #         path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
+        #         clip_on=True,
+        #     )
         # Plot outputs
         output = outputs[state]
         if output is not None:
+            label = f"{np.argmax(tuple(np.round(output,2)))}"
             ax.text(
-                x - 0.08,
-                y - 0.04,
-                f"{tuple(np.round(output,2))}",
-                fontsize=8,
+                x - 0.012,
+                y - 0.015,
+                label,
+                fontsize=fontsize + 2,
                 path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
                 clip_on=True,
+                color="#552620",
             )
 
         # Plot initial state name
@@ -204,7 +219,7 @@ def display_automata(
             x_init - 0.04,
             y_init + 0.03,
             "initial",
-            fontsize=8,
+            fontsize=fontsize,
             path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
             clip_on=True,
         )
@@ -247,7 +262,7 @@ def display_automata(
             + 0.3 * symbol_number * scale_x,
             0.2 * y_prev + 0.8 * y_next + label_offset_y + 0.2 * scale_y,
             input_symbol,
-            fontsize=8,
+            fontsize=fontsize,
             path_effects=[pe.Stroke(linewidth=2, foreground="w"), pe.Normal()],
             clip_on=True,
             color="black",
