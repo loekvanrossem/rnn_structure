@@ -367,7 +367,7 @@ def to_automaton(
 
 
 def nondistinguishable_partition(automata):
-    """
+    r"""
     Apply Hopcroft's algorithm to find a partition of nondistinguishable states.
 
     Pseudocode:
