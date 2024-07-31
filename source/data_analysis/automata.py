@@ -1,4 +1,5 @@
 from typing import Any
+from xmlrpc.client import Boolean
 
 import pandas as pd
 import numpy as np
@@ -22,6 +23,34 @@ class State:
 
     def __repr__(self):
         return f"State({self.name})"
+
+
+def has_all_transitions(
+    state: State, transition_function: dict[tuple[State, str], State]
+) -> bool:
+    """
+    Return True if the state has transitions for all possible input symbols.
+
+    Parameters
+    ----------
+    state : State
+        The state to check for transitions
+    transition_function : dict[tuple[State, str], State]
+        The transition function of the automaton
+
+    Returns
+    -------
+    bool
+        True if transitions exist for all possible input symbols, False otherwise
+    """
+    # Extract input symbols from transition_function keys
+    input_symbols = {symbol for (_, symbol) in transition_function.keys()}
+
+    # Check if transitions exist for all possible input symbols
+    for symbol in input_symbols:
+        if (state, symbol) not in transition_function:
+            return False
+    return True
 
 
 class Automaton:
@@ -88,6 +117,12 @@ class Automaton:
             state = self.transition_function[state, input_symbol]
         output = self.output_function[state]
         return output
+
+    def is_finite(self) -> bool:
+        for state in self.states:
+            if not has_all_transitions(state, self.transition_function):
+                return False
+        return True
 
 
 class AutomatonHistory:

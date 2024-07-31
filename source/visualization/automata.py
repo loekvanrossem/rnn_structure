@@ -10,7 +10,13 @@ from matplotlib import axes
 import matplotlib.style as mplstyle
 
 from visualization.basic_plotting import axes_scale
-from data_analysis.automata import Automaton, AutomatonHistory, State, reduce_automaton
+from data_analysis.automata import (
+    Automaton,
+    AutomatonHistory,
+    State,
+    reduce_automaton,
+    has_all_transitions,
+)
 from visualization import animation
 
 mplstyle.use("fast")
@@ -93,34 +99,6 @@ def layers_to_coordinates(
             coordinates[state] = (x_coordinate, y_coordinate)
 
     return coordinates
-
-
-def has_all_transitions(
-    state: State, transition_function: dict[tuple[State, str], State]
-) -> bool:
-    """
-    Return True if the state has transitions for all possible input symbols.
-
-    Parameters
-    ----------
-    state : State
-        The state to check for transitions
-    transition_function : dict[tuple[State, str], State]
-        The transition function of the automaton
-
-    Returns
-    -------
-    bool
-        True if transitions exist for all possible input symbols, False otherwise
-    """
-    # Extract input symbols from transition_function keys
-    input_symbols = {symbol for (_, symbol) in transition_function.keys()}
-
-    # Check if transitions exist for all possible input symbols
-    for symbol in input_symbols:
-        if (state, symbol) not in transition_function:
-            return False
-    return True
 
 
 def display_automata(
