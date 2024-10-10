@@ -1,6 +1,7 @@
 from typing import Any
 from xmlrpc.client import Boolean
 
+import random
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -459,3 +460,44 @@ def reduce_automaton(automaton: Automaton):
     }
 
     return Automaton(states, initial_state, transition_function, output_function)
+
+
+def gen_rand_automaton(
+    in_symbols: list[str], out_symbols: list, max_num_states: int = 10
+):
+    """
+    Generate a random automaton given
+    """
+
+    initial_state = State("initial")
+
+    incomplete_states = [initial_state]
+
+    states = [initial_state]
+    transition_function = {}
+    output_function = {}
+    while len(incomplete_states) > 0:
+        state = incomplete_states[0]
+        for symbol in in_symbols:
+            if len(states) < max_num_states and random.random() < 0.5:
+                # Generate new state
+                if state.name == "initial":
+                    new_name = symbol
+                else:
+                    new_name = state.name + symbol
+                new_state = State(new_name)
+                transition_function[state, symbol] = new_state
+                incomplete_states.append(new_state)
+                states.append(new_state)
+            else:
+                # Transition to already existing state
+                next_state = random.choice(states)
+                transition_function[state, symbol] = next_state
+        incomplete_states.remove(state)
+
+    for state in states:
+        output_function[state] = random.choice(out_symbols)
+
+    automaton = Automaton(states, initial_state, transition_function, output_function)
+
+    return automaton
