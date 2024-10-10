@@ -125,6 +125,22 @@ class Automaton:
                 return False
         return True
 
+    def merge_states(self, state_1: State, state_2: State):
+        # state_1.name = f"{state_1.name}, {state_2.name}"
+        for old_state in self.states:
+            for symbol in self.alphabet:
+                if (old_state, symbol) in self.transition_function:
+                    if self.transition_function[old_state, symbol] == state_2:
+                        self.transition_function[old_state, symbol] = state_1
+
+        if self.output_function[state_1] != self.output_function[state_2]:
+            print("Warning: merged two states with differing outputs!")
+
+        for symbol in self.alphabet:
+            del self.transition_function[state_2, symbol]
+        del self.output_function[state_2]
+        del state_2
+
 
 class AutomatonHistory:
     """
