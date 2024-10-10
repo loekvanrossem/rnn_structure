@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable
 from xmlrpc.client import Boolean
 
 import random
@@ -463,10 +463,10 @@ def reduce_automaton(automaton: Automaton):
 
 
 def gen_rand_automaton(
-    in_symbols: list[str], out_symbols: list, max_num_states: int = 10
+    in_symbols: list, out_symbols: list, max_num_states: int = 10, new_state_prob=0.75
 ):
     """
-    Generate a random automaton given
+    Generate a random automaton given input and output alphabets.
     """
 
     initial_state = State("initial")
@@ -475,28 +475,63 @@ def gen_rand_automaton(
 
     states = [initial_state]
     transition_function = {}
-    output_function = {}
     while len(incomplete_states) > 0:
         state = incomplete_states[0]
         for symbol in in_symbols:
-            if len(states) < max_num_states and random.random() < 0.5:
+            if (
+                len(states) < max_num_states and random.random() < new_state_prob
+            ) or state == initial_state:
                 # Generate new state
                 if state.name == "initial":
-                    new_name = symbol
+                    new_name = str(symbol)
                 else:
-                    new_name = state.name + symbol
+                    new_name = state.name + str(symbol)
                 new_state = State(new_name)
                 transition_function[state, symbol] = new_state
                 incomplete_states.append(new_state)
                 states.append(new_state)
             else:
                 # Transition to already existing state
-                next_state = random.choice(states)
+                next_state = random.choice(states[1:])
                 transition_function[state, symbol] = next_state
         incomplete_states.remove(state)
 
+    output_function = {}
     for state in states:
-        output_function[state] = random.choice(out_symbols)
+        if state == initial_state:
+            output_function[state] = None
+        else:
+            output_function[state] = random.choice(out_symbols)
+
+    automaton = Automaton(states, initial_state, transition_function, output_function)
+
+    return automaton
+
+
+def gen_tree(in_symbols: list, out_function: Callable, depth: int):
+    initial_state = State("initial")
+    last_layer = [initial_state]
+    transition_function = {}
+    states = [initial_state]
+    for layer in range(depth):
+        new_layer = []
+        for state in last_layer:
+            for symbol in in_symbols:
+                # Generate new state
+                if state.name == "initial":
+                    new_name = str(symbol)
+                else:
+                    new_name = state.name + str(symbol)
+                new_state = State(new_name)
+                transition_function[state, symbol] = new_state
+                new_layer.append(new_state)
+                states.append(new_state)
+        last_layer = new_layer
+
+    output_function = {
+        state: None if state.name == "initial" else out_function(state.name)
+        for state in states
+    }
 
     automaton = Automaton(states, initial_state, transition_function, output_function)
 
