@@ -216,6 +216,12 @@ def display_automata(
             angleB = 115
         else:
             angleB = 180
+            if y_start == y_end:
+                angleB = 170
+                if x_start < x_end:
+                    y_end += 0.01
+                else:
+                    y_end -= 0.01
         transition = patches.FancyArrowPatch(
             (x_start, y_start),
             (x_end, y_end),
@@ -230,6 +236,8 @@ def display_automata(
         # Compute label position based on transition angle
         label_offset_x = 0.2 * scale_x * np.cos(np.radians(angleA))
         label_offset_y = 0.2 * scale_y * np.sin(np.radians(angleA))
+        if x_start > x_end:
+            label_offset_y *= -1
 
         # Add input symbol label
         symbol_number = symbol_indices[input_symbol]
