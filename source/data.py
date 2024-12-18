@@ -9,9 +9,10 @@ from torch.utils.data import TensorDataset
 from preprocessing import Encoding
 
 
-def gen_rand_seq(n, symbols, n_sequences):
+def gen_rand_seq(n, symbols, n_sequences=None):
     """Generate random sequences of length n"""
     sequences = []
+    n_sequences = len(symbols) ** n if not n_sequences else n_sequences
     while len(sequences) < min(n_sequences, len(symbols) ** n):
         seq = [random.choice(list(symbols)) for _ in range(n)]
         if not seq in sequences:
