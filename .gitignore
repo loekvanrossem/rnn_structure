@@ -1,4 +1,5 @@
 *.pyc
+*.pdf
 plots
 .gitignore
 stock-news/trained_rnn.pt
