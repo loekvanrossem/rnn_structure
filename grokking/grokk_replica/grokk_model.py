@@ -34,7 +34,7 @@ class GrokkModel(nn.Module):
             .repeat(x.shape[0], 1, 1)
             .to(self.device)
         )
-        predictions, attns, _, hidden = self.transformer(x, attn_mask, repeats=100)
+        predictions, attns, _, hs = self.transformer(x, attn_mask, repeats=100)
 
         # a = torch.flatten(
         #     torch.flatten(torch.stack(attns, dim=1), start_dim=2), end_dim=1
@@ -43,10 +43,13 @@ class GrokkModel(nn.Module):
         # h = torch.flatten(hidden, end_dim=1)
 
         a = torch.flatten(torch.stack(attns, dim=1), start_dim=1)
-        h = torch.flatten(hidden, start_dim=1)
-        z = torch.cat([a, h], dim=1)
+        # h = torch.flatten(hidden, start_dim=1)
+        # z = torch.cat([a, h], dim=1)
 
-        return z
+        h = torch.cat(hs)
+        h = torch.flatten(h, start_dim=1)
+
+        return h, a
 
     def get_loss(self, x, y):
         predictions, attns = self(x)

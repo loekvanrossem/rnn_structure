@@ -32,25 +32,26 @@ def generate_long_input(dataset, length, N):
     return inputs
 
 
-def count_states(H, threshold):
-    dist = scipy.spatial.distance_matrix(H, H)
-    count = np.sum(dist > threshold)
-    n_datapoints = H.shape[0]
-    # fraction = count / n_datapoints**2
-    fraction = count
-    return fraction
-
-
 # def count_states(H, threshold):
 #     dist = scipy.spatial.distance_matrix(H, H)
-#     threshold = 0.2 * np.max(dist)
-#     clustering = AgglomerativeClustering(
-#         n_clusters=None, distance_threshold=threshold
-#     ).fit(H)
-#     count = len(set(clustering.labels_))
+#     count = np.sum(dist > threshold)
 #     n_datapoints = H.shape[0]
-#     fraction = count / n_datapoints
+#     fraction = count / n_datapoints**2
+#     print(f"average distance: {np.sum(dist)/len(dist)**2}")
+#     print(f"average norm: {np.mean(np.linalg.norm(H, axis=1))}")
+#     # fraction = count
 #     return fraction
+
+
+def count_states(H, threshold):
+    dist = scipy.spatial.distance_matrix(H, H)
+    clustering = AgglomerativeClustering(
+        n_clusters=None, distance_threshold=threshold
+    ).fit(H)
+    count = len(set(clustering.labels_))
+    n_datapoints = H.shape[0]
+    fraction = count / n_datapoints
+    return fraction
 
 
 # def count_states(H, threshold):
@@ -113,8 +114,7 @@ def train(config):
         optim, lr_lambda=lambda s: min(s / train_cfg["warmup_steps"], 1)
     )
     step = 0
-    n_states = 0  # should probably be set to something else
-    count_thresh = None
+    count_thresh_hidden,count_thresh_attn = None, None
     for x, y in tqdm(train_dataloader):
         loss, logs = model.get_loss(x.to(device), y.to(device))
         optim.zero_grad()
@@ -124,22 +124,34 @@ def train(config):
         if (step) % train_cfg["eval_every"] == 0:
             model.eval()
             with torch.no_grad():
-                all_val_logs, hiddens = [], []
+                all_val_logs, hiddens,attns = [], [], []
                 for i, (val_x, val_y) in tqdm(enumerate(val_dataloader)):
                     if i >= train_cfg["eval_batches"]:
                         break
                     _, val_logs = model.get_loss(val_x.to(device), val_y.to(device))
                     all_val_logs.append(val_logs)
-                    hidden = model.get_hidden(x.to(device)).detach().cpu().numpy()
+                    hidden, attn = model.get_hidden(x.to(device))
+                    hidden, attn = hidden.detach().cpu().numpy(), attn.detach().cpu().numpy()
                     hiddens.append(hidden)
+                    attns.append(attn)
                 H = np.concatenate(hiddens, axis=0)
-                H = sklearn.preprocessing.normalize(H,axis=0)
-                if not count_thresh:
+                A = np.concatenate(attns, axis=0)
+                H = H.transpose()
+                H = sklearn.decomposition.PCA(n_components=512).fit_transform(H)
+                # H = sklearn.preprocessing.normalize(H,axis=0)
+                # H = torch.nn.functional.layer_norm(torch.from_numpy(H),(512,512)).numpy()
+                c = 1.5
+                if not count_thresh_hidden:
                     dist = scipy.spatial.distance_matrix(H, H)
-                    # count_thresh = 0.05 * np.max(dist)
+                    count_thresh_hidden = c* np.max(dist)
+                    dist = scipy.spatial.distance_matrix(A, A)
+                    count_thresh_attn = c* np.max(dist)
                     # count_thresh = 0.01*np.std(dist)
-                    count_thresh = 3
-                n_states = count_states(H, threshold=count_thresh)
+                    # diameter = 2*np.sqrt(512)
+                    # count_thresh = 2
+                    # count_thresh = np.mean(np.linalg.norm(H, axis=1))
+                n_states_hidden = count_states(H, threshold=count_thresh_hidden)
+                n_states_attn = count_states(A, threshold=count_thresh_attn)
                 # if not count_thresh:
                 #     count_thresh = n_states
                 # n_states = n_states / count_thresh
@@ -148,7 +160,8 @@ def train(config):
                 "train": combine_logs([logs]),
                 "step": (step + 1),
                 "lr": float(lr_schedule.get_last_lr()[0]),
-                "n_states": n_states,
+                "n_states_attn": n_states_attn,
+                "n_states_hidden": n_states_hidden,
             }
             print(out_log)
             if wandb_cfg["use_wandb"]:

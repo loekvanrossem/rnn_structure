@@ -78,6 +78,7 @@ class TransformerBlock(nn.Module):
                 x, x, x, attn_mask, past_kv=past_kv
             )
             x = self.layer_norm1(self.dropout1(attn_output) + x)
+            h = x
             mlp_out = self.ff2(self.dropout2(F.gelu(self.ff1(x))))
             x = self.layer_norm2(self.dropout3(mlp_out) + x)
         else:
@@ -87,9 +88,10 @@ class TransformerBlock(nn.Module):
             )
             x = self.dropout1(attn_output) + x
             x_norm2 = self.layer_norm2(x)
+            h = x
             mlp_out = self.ff2(self.dropout2(F.gelu(self.ff1(x_norm2))))
             x = self.dropout3(mlp_out) + x
-        return x, attn_matrix, past_kv
+        return x, attn_matrix, past_kv, h
 
 
 class Transformer(nn.Module):
@@ -140,6 +142,7 @@ class Transformer(nn.Module):
         # past_kvs = list of past_kvs for each layer
 
         attns = []
+        hs = []
         new_past_kvs = []
         initial_pos = 0
         if past_kvs is not None:
@@ -152,19 +155,20 @@ class Transformer(nn.Module):
         step = 0
         for _ in range(repeats):
             for i in range(len(self.transformer_blocks)):
-                x, attn, past_kv = self.transformer_blocks[i](
+                x, attn, past_kv, h = self.transformer_blocks[i](
                     x,
                     attn_mask,
                     past_kv=past_kvs[step] if past_kvs is not None else None,
                 )
                 attns.append(attn)
+                hs.append(h)
                 new_past_kvs.append(past_kv)
                 step += 1
-                if i == self.hidden_layer:
-                    h = x
+                # if i == self.hidden_layer:
+                #     h = x
         if self.pre_norm:
             x = self.norm(x)
-        return self.output(x), attns, new_past_kvs, h
+        return self.output(x), attns, new_past_kvs, hs
 
 
 def xavier_init(model):
