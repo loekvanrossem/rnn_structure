@@ -88,15 +88,15 @@ class Model(nn.Module):
         )
         return hidden
 
-    def sqr_dist(self, X: torch.Tensor):
-        dist = (
-            torch.diagonal(torch.tensordot(X, X, dims=([1], [1])))  # type: ignore
-            + -2 * torch.tensordot(X, X.mT, dims=([1], [0]))  # type: ignore
-            + torch.diagonal(torch.tensordot(X.mT, X.mT, dims=([0], [0])))[  # type: ignore
-                :, np.newaxis
-            ]
-        )
-        return dist
+    # def sqr_dist(self, X: torch.Tensor):
+    #     dist = (
+    #         torch.diagonal(torch.tensordot(X, X, dims=([1], [1])))  # type: ignore
+    #         + -2 * torch.tensordot(X, X.mT, dims=([1], [0]))  # type: ignore
+    #         + torch.diagonal(torch.tensordot(X.mT, X.mT, dims=([0], [0])))[  # type: ignore
+    #             :, np.newaxis
+    #         ]
+    #     )
+    #     return dist
 
     def train_step(self, optimizer: Optimizer, criterion, dataloader):
         self.train()
