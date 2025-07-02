@@ -277,6 +277,9 @@ class AutomatonAnimation(animation.AnimationSubPlot):
 
     def plot(self, ax: axes.Axes):
         self.ax = ax
+        ax.spines[:].set_capstyle("round")
+        ax.spines[:].set_linewidth(3)
+        ax.spines[:].set_color("0.25")
         self._display_current_automaton()
 
     def update(self, parameter: int):

@@ -36,6 +36,8 @@ class PointAnimation(animation.AnimationSubPlot):
         An assignment of colors to the points
     plot_trails : bool, optional, default True
         Plot the trajectory for each point
+    no_axes : bool, optional, default True
+        If true, do not plot the axes
     """
 
     def __init__(
@@ -44,6 +46,7 @@ class PointAnimation(animation.AnimationSubPlot):
         labels: Optional[np.ndarray] = None,
         colors: Optional[list[int]] = None,
         plot_trails: bool = True,
+        no_axes: bool = True,
     ):
         ## Get colors from cycler
         prop_cycle = plt.rcParams["axes.prop_cycle"]
@@ -61,9 +64,13 @@ class PointAnimation(animation.AnimationSubPlot):
             self.colors = [0] * points.shape[1]
         else:
             self.colors = colors
+        self.no_axes = no_axes
 
     def plot(self, ax: axes.Axes):
         self.ax = ax
+        ax.spines[:].set_capstyle("round")
+        ax.spines[:].set_linewidth(3)
+        ax.spines[:].set_color("0.25")
         if self.labels is None:
             self.labels = [None] * len(self.points[0])
 
@@ -105,7 +112,14 @@ class PointAnimation(animation.AnimationSubPlot):
             if self.plot_trails:
                 line = self.ax.plot(x_values, y_values, c=color, label=label, zorder=0)
 
+        if self.no_axes:
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
+            ax.set_xticks([])
+            ax.set_yticks([])
+
         self._points = graphics
+        
 
     def update(self, parameter: int):
         epoch = parameter
@@ -117,8 +131,8 @@ class PointAnimation(animation.AnimationSubPlot):
             y = float(point[epoch, 1])
 
             # Position point
-            point_graphic[0].set_xdata(x)
-            point_graphic[0].set_ydata(y)
+            point_graphic[0].set_xdata([x])
+            point_graphic[0].set_ydata([y])
 
             # Position label
             if label is not None:
@@ -135,6 +149,8 @@ class PointAnimation(animation.AnimationSubPlot):
                 label.set_position(pos)
                 labels_x_pos.append(pos[0])
                 labels_y_pos.append(pos[1])
+        
+        
 
     def _smallest_dist(self, point, labels_x_pos, labels_y_pos):
         distances = 0.25 * (point[0] - np.array(labels_x_pos)) ** 2 + (

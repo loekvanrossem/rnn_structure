@@ -23,18 +23,6 @@ COLORS_MIXED = [
         "860A35",
         "ADE4DB",
     ],
-    [
-        "28434A",
-        "814541",
-        "947C9E",
-        "f7de9f",
-        "AF87CE",
-        "44c2e1",
-        # "EF6642",
-        # "A2C579",
-        # "860A35",
-        # "ADE4DB",
-    ],
     ["FF044F", "760AC0", "00D950", "9F82C9", "471664", "05DFD7"],
 ]
 
@@ -163,8 +151,8 @@ def pub_show(
 
     if save_path:
         kwargs.setdefault("bbox_inches", "tight")
-        # plt.savefig(save_path, dpi=200, **kwargs)
-        plt.savefig(save_path + ".pdf", format="pdf", **kwargs)
+        plt.savefig(save_path, dpi=200, **kwargs)
+        plt.savefig(save_path + ".eps", format="eps", **kwargs)
 
     if show_plot:
         plt.show()
@@ -186,7 +174,8 @@ def plt_show(no_axes=False, **kwargs):
         legend = plt.legend(
             # [text.get_text() for text in legend.get_texts()],
             loc="upper right",
-            fancybox=True,
+            # fancybox=True,
+            frameon=False,
             framealpha=0.9,
             shadow=True,
             borderpad=0.6,
@@ -196,6 +185,7 @@ def plt_show(no_axes=False, **kwargs):
         for line in legend.get_lines():
             line.set_linewidth(2.5)
         legend.get_frame().set_linewidth(2)
+        legend.get_frame().set_alpha(0)
 
     # Axes
     n_ticks = int(2.5 + fig.get_figheight() * 0.5)

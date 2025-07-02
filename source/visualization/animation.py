@@ -96,11 +96,11 @@ class SliderAnimation:
 
     def _plot(self) -> figure.Figure:
         n_plots = len(self.plots)
-        n_columns = 2
+        n_columns = 3
         n_rows = math.ceil(n_plots / n_columns)
         fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
         fig.subplots_adjust(
-            left=0.1, right=0.9, top=0.94, bottom=0.06, wspace=0.1, hspace=0.2
+            left=0.1, right=0.9, top=0.65, bottom=0.06, wspace=0.5, hspace=0.2
         )
         for n, (title, plot) in enumerate(self.plots.items()):
             ax = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))

@@ -23,6 +23,18 @@ COLORS_MIXED = [
         "860A35",
         "ADE4DB",
     ],
+    [
+        "28434A",
+        "814541",
+        "947C9E",
+        "f7de9f",
+        "AF87CE",
+        "44c2e1",
+        # "EF6642",
+        # "A2C579",
+        # "860A35",
+        # "ADE4DB",
+    ],
     ["FF044F", "760AC0", "00D950", "9F82C9", "471664", "05DFD7"],
 ]
 
@@ -151,14 +163,14 @@ def pub_show(
 
     if save_path:
         kwargs.setdefault("bbox_inches", "tight")
-        plt.savefig(save_path, dpi=200, **kwargs)
-        plt.savefig(save_path + ".eps", format="eps", **kwargs)
+        # plt.savefig(save_path, dpi=200, **kwargs)
+        plt.savefig(save_path + ".pdf", format="pdf", **kwargs)
 
     if show_plot:
         plt.show()
 
 
-def plt_show(no_axes=False, **kwargs):
+def plt_show(no_axes=False, legendbox=False,**kwargs):
     fig = plt.gcf()
     ax = plt.gca()
 
@@ -176,6 +188,7 @@ def plt_show(no_axes=False, **kwargs):
             loc="upper right",
             fancybox=True,
             framealpha=0.9,
+            frameon = legendbox,
             shadow=True,
             borderpad=0.6,
             edgecolor="0.7",
