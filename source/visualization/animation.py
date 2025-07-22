@@ -63,7 +63,10 @@ class SliderAnimation:
         self.plots = plots
         self.parameters = parameters
         self.parameter_name = parameter_name
-        self.fig_size = fig_size
+        if type(fig_size) is not tuple: 
+            self.fig_size = (fig_size, fig_size)
+        else:
+            self.fig_size = fig_size
         self._buffer = {}
         self._start()
 
@@ -96,11 +99,11 @@ class SliderAnimation:
 
     def _plot(self) -> figure.Figure:
         n_plots = len(self.plots)
-        n_columns = 3
+        n_columns = min(n_plots,3)
         n_rows = math.ceil(n_plots / n_columns)
-        fig = plt.figure(figsize=(n_columns * self.fig_size, n_rows * self.fig_size))
+        fig = plt.figure(figsize=(n_columns * self.fig_size[0], 0.9*n_rows * self.fig_size[1]))
         fig.subplots_adjust(
-            left=0.1, right=0.9, top=0.65, bottom=0.06, wspace=0.5, hspace=0.2
+            left=0.1, right=0.9, top=0.9, bottom=0.3, wspace=0.55, hspace=0.2
         )
         for n, (title, plot) in enumerate(self.plots.items()):
             ax = fig.add_subplot(n_rows * 100 + n_columns * 10 + (n + 1))

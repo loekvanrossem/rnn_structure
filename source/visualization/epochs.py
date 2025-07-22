@@ -22,6 +22,8 @@ class EpochAnimation(animation.AnimationSubPlot):
         Data per epoch to be plotted invariant of bounds.
     x_bounds: Optional[tuple[float, float]]
     y_bounds: Optional[tuple[float, float]]
+    y_label: Optional[str]
+        Label for the y-axis.
     """
 
     def __init__(
@@ -30,11 +32,15 @@ class EpochAnimation(animation.AnimationSubPlot):
         unitless_graphs: Optional[dict[str, np.ndarray]] = None,
         x_bounds: Optional[tuple[float, float]] = None,
         y_bounds: Optional[tuple[float, float]] = None,
+        y_label: Optional[str] = None,
+        legend: Optional[bool] = True,
     ):
         self.graphs = graphs
         self.unitless_graphs = unitless_graphs
         self.x_bounds = x_bounds
         self.y_bounds = y_bounds
+        self.y_label = y_label
+        self.legend = legend
 
     def plot(self, ax: axes.Axes):
         for name, data in self.graphs.items():
@@ -59,8 +65,11 @@ class EpochAnimation(animation.AnimationSubPlot):
         self._vline = ax.axvline(x=0, color="red", linestyle="--")
         self._vline.set_visible(False)
 
-        plt.legend(loc="upper left")
+        if self.legend:
+            plt.legend(loc="upper left")
         plt.xlabel("Epoch")
+        if self.y_label:
+            plt.ylabel(self.y_label)
 
         # plt.show()
         publication.plt_show()
@@ -68,3 +77,4 @@ class EpochAnimation(animation.AnimationSubPlot):
     def update(self, epoch: int):
         self._vline.set_visible(True)
         self._vline.set_xdata([epoch])
+

@@ -152,9 +152,9 @@ def display_automata(
             color = "#d4ede8"
             opacity = 1
         else:
-            # color = "#808080"
-            color = "#d4ede8"
-            opacity = 0.5
+            # color = "#d4ede8"
+            color = "#EF6642"
+            # opacity = 0.5
 
         circle = plt.Circle(
             (x, y),

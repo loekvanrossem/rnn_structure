@@ -7,24 +7,6 @@ import numpy as np
 from preprocessing import Encoding
 
 
-# class Discontinuity(torch.autograd.Function):
-#     @staticmethod
-#     def forward(ctx,input):
-#         ctx.save_for_backward(input)
-#         output = input.clone()
-#         output[input < 0] = 0
-#         output[input > 0] = input[input > 0] + 1
-#         return output
-        
-#     @staticmethod
-#     def backward(ctx,grad_output):
-#         input, = ctx.saved_tensors
-#         grad_input = grad_output.clone()
-#         grad_input[input < 0] =0
-#         return grad_input
-    
-# def discontinuity(x):
-#     return Discontinuity.apply(x)
 
 
 class Discontinuity(torch.autograd.Function):
@@ -98,7 +80,6 @@ class Model(nn.Module):
             nonlinearity=nonlinearity,
         )
         self.fc = nn.Linear(hidden_dim, output_size)
-        self.ReLU = nn.LeakyReLU()
 
         for par in self.parameters():
             if len(par.shape) == 2:
@@ -115,7 +96,7 @@ class Model(nn.Module):
 
         out, hidden = self.rnn(x, hidden)
         out = out[:, -1]
-        out = discontinuity(out)
+        # out = discontinuity(out)
         out = self.fc(out)
 
         return out, hidden
